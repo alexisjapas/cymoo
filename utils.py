@@ -1,4 +1,4 @@
-def get_ranks(X, ranks={}, rank=1):
+def nsgaii_ranking(X, ranks={}, rank=1):
     dominated_values = []
     undominated_values = X.copy()
     for x in X:
@@ -10,7 +10,7 @@ def get_ranks(X, ranks={}, rank=1):
                 break
     ranks[rank] = undominated_values
     if dominated_values:
-        ranks = get_ranks(dominated_values, ranks, rank+1)
+        ranks = nsgaii_ranking(dominated_values, ranks, rank+1)
 
     return ranks
 
@@ -43,7 +43,7 @@ if __name__ == "__main__":
     X = [(2.08, 5.34), (5.92, 2.08), (4.18, 3.69), (6.69, 6.67), (7.19, 1.8), (9.89, 8.49), (5.23, 7.41), (9.61, 7.28), (1.9, 6.48), (4.68, 1.47)]
 
     print("RANKING")
-    ranks = get_ranks(X)
+    ranks = nsgaii_ranking(X)
     print(ranks, '\n')
 
     print("DISTANCES")
