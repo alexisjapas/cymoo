@@ -2,10 +2,8 @@ def get_ranks(X, ranks={}, rank=1):
     dominated_values = []
     undominated_values = X.copy()
     for x in X:
-        dominated = False
         for x_bis in X:
             if x_bis[0] < x[0] and x_bis[1] < x[1]:
-                dominated = True
                 dominated_values.append(x)
                 if x in undominated_values:
                     undominated_values.remove(x)
