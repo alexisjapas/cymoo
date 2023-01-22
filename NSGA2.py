@@ -1,55 +1,62 @@
-class NSGA2():
-    def __init__(self):
-        pass
+from Solution import Solution
 
-    def nsga2_ranking(self, X, optim_direction):
+
+class NSGA2():
+    def __init__(self, X, optim_direction):
+        self.X = X
+        self.solutions = [Solution(i, x) for i, x in enumerate(X)]
+        self.optim_direction = optim_direction
+
+    def default_solutions(self, X):
+        self.solutions = [Solution(i, x) for i, x in enumerate(X)]
+        return 0
+
+    def ranking(self):
         """
         Computes each rank of a set of solutions.
         """
-        def _nsga2_ranking(X, ranks, rank):
+        def _ranking(solutions, rank):
             """
             Recursive implementation of the function.
             """
             dominated_values = []
-            undominated_values = X.copy()
-            for x in X:
-                for x_bis in X:
-                    if all([x_bis[i] < x[i] if opti_dir == 'min' else x_bis[i] > x[i] for i, opti_dir in enumerate(optim_direction)]):
-                        dominated_values.append(x)
-                        undominated_values.remove(x)
+            undominated_values = solutions.copy()
+            for sol in solutions:
+                for sol_bis in solutions:
+                    if all([sol_bis.solution[i] < sol.solution[i] if opti_dir == 'min' else sol_bis.solution[i] > sol.solution[i] for i, opti_dir in enumerate(self.optim_direction)]):
+                        sol.rank = rank
+                        dominated_values.append(sol)
+                        undominated_values.remove(sol)
                         break
-            ranks[rank] = undominated_values
+            for sol in undominated_values:
+                self.solutions[self.solutions.index(sol)].rank = rank
             if dominated_values:
-                ranks = _nsga2_ranking(dominated_values, ranks, rank+1)
-            return ranks
+                rank = _ranking(dominated_values, rank+1)
+            return rank
 
-        return _nsga2_ranking(X, {}, 1)
+        self.max_rank = _ranking(self.solutions, 1)
+        return 0
 
-    def crowding_distance(self, ranks):
+    def crowding_distance(self):
         """
         Computes crowding distance for each domination rank.
         """
-        distances = {}
-        for i, X in ranks.items():
-            sorted_X = [sorted(X, key=lambda tup: tup[t]) for t in range(len(X[0]))]
-            X_distances = [0 for _ in range(len(X))]
-            X_distances[0] = float("inf")
-            X_distances[-1] = float("inf")
+        for rank in range(1, self.max_rank+1):
+            current_rank_solutions = [sol for sol in self.solutions if sol.rank == rank]
+            sorted_crs = [sorted(current_rank_solutions, key=lambda tup: tup.solution[t]) for t in range(len(current_rank_solutions[0].solution))]
+            sorted_crs[0][0].crowding_distance = float("inf")
+            sorted_crs[0][-1].crowding_distance = float("inf")
+            for i_dim, dim_solutions in enumerate(sorted_crs):
+                for i in range(1, len(dim_solutions)-1):
+                    dim_solutions[i].crowding_distance += dim_solutions[i+1].solution[i_dim] - dim_solutions[i-1].solution[i_dim]
+        return 0
 
-            for j_dim, dim in enumerate(sorted_X):
-                if dim != sorted_X[0]:
-                    X_distances.reverse()
-                for j in range(1, len(X)-1):
-                    X_distances[j] += dim[j+1][j_dim] - dim[j-1][j_dim]
-                if dim != sorted_X[0]:
-                    X_distances.reverse()
-            distances[i] = X_distances
-
-        return distances
+    def selection(self, crowding_distances, n_kept):
+        pass
 
     def relative_efficiency(self, X, Y, optim_direction):
         """
-        Number of solutions of X undominated by Y solutions.
+        Number of solutions of X undominated by Y solutions. DEPRECATED.
         """
         undominated_values = X
         for x in X:
@@ -61,28 +68,33 @@ class NSGA2():
 
         return len(undominated_values)
 
+    def optimize(self, ratio_kept):
+        default_solutions(self.X)
+        self.ranking()
+        self.crowding_distance()
+        selected = self.selection(distances, round(len(X) * ratio_kept))
+
 
 if __name__ == "__main__":
+    # Parameters
+    X = [(2.08, 5.34), (5.92, 2.08), (4.18, 3.69), (6.69, 6.67), (7.19, 1.8), (9.89, 8.49), (5.23, 7.41), (9.61, 7.28), (1.9, 6.48), (4.68, 1.47)]
     optim_dir = ["min", "min"]
-    vX = [(2.08, 5.34), (5.92, 2.08), (4.18, 3.69), (6.69, 6.67), (7.19, 1.8), (9.89, 8.49), (5.23, 7.41), (9.61, 7.28), (1.9, 6.48), (4.68, 1.47)]
-    print(len(vX))
 
-    vY = [(8.01, 8.11), (0.65, 7.33), (8.08, 7.46), (1.21, 5.01), (6.34, 4.05), (4.08, 6.15), (2.35, 6.48), (3.33, 4.26), (3.68, 9.68), (8.45, 2.68)]
-    print(len(vY))
+    # Initializing NSGA2
+    nsga2 = NSGA2(X, optim_dir)
 
+    # Optimize
+    # final_sols = nsga2.optimize(0.5)
+    # final_sols2 = nsga2.optimize(0.2)
 
-    nsga2 = NSGA2()
-    print("RANKING")
-    ranks_vX = nsga2.nsga2_ranking(vX, optim_dir)
-    print(ranks_vX, '\n')
+    # Tests
+    print(nsga2.solutions)
+    print()
+    nsga2.ranking()
+    for sol in nsga2.solutions:
+        print(sol)
 
-    ranks_vY = nsga2.nsga2_ranking(vY, optim_dir)
-    print(ranks_vY, '\n')
+    nsga2.crowding_distance()
+    for sol in nsga2.solutions:
+        print(sol)
 
-    print("DISTANCES")
-    print(nsga2.crowding_distance(ranks_vX), '\n')
-    print(nsga2.crowding_distance(ranks_vY), '\n')
-
-    print("EFFICIENCY")
-    print(nsga2.relative_efficiency(ranks_vX[1], ranks_vY[1], optim_dir))
-    print(nsga2.relative_efficiency(ranks_vY[1], ranks_vX[1], optim_dir))
