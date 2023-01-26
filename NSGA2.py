@@ -3,6 +3,7 @@ from Solution import Solution
 
 class NSGA2():
     def __init__(self, X, optim_direction):
+        self.population_size = len(X)
         self.X = X
         self.solutions = [Solution(i, x) for i, x in enumerate(X)]
         self.optim_direction = optim_direction
@@ -51,12 +52,14 @@ class NSGA2():
                     dim_solutions[i].crowding_distance += dim_solutions[i+1].solution[i_dim] - dim_solutions[i-1].solution[i_dim]
         return 0
 
-    def selection(self, crowding_distances, n_kept):
-        pass
+    def selection(self, ratio_kept):
+        self.solutions.sort(key=lambda sol: (sol.rank, sol.crowding_distance))
+        self.solutions = self.solutions[:round(ratio_kept*self.population_size)]
+
 
     def relative_efficiency(self, X, Y, optim_direction):
         """
-        Number of solutions of X undominated by Y solutions. DEPRECATED.
+        DEPRECATED. Number of solutions of X undominated by Y solutions.
         """
         undominated_values = X
         for x in X:
@@ -69,11 +72,30 @@ class NSGA2():
         return len(undominated_values)
 
     def optimize(self, ratio_kept):
-        default_solutions(self.X)
-        self.ranking()
-        self.crowding_distance()
-        selected = self.selection(distances, round(len(X) * ratio_kept))
+        self.default_solutions(self.X)
+        for sol in nsga2.solutions:
+            print(sol)
+        print()
 
+        self.ranking()
+        for sol in nsga2.solutions:
+            print(sol)
+        print()
+
+        self.crowding_distance()
+        for sol in nsga2.solutions:
+            print(sol)
+        print()
+
+        self.solutions.sort(key=lambda sol: sol.id, reverse=True)
+        for sol in nsga2.solutions:
+            print(sol)
+        print()
+
+        self.selection(ratio_kept)
+        for sol in nsga2.solutions:
+            print(sol)
+        print()
 
 if __name__ == "__main__":
     # Parameters
@@ -84,17 +106,4 @@ if __name__ == "__main__":
     nsga2 = NSGA2(X, optim_dir)
 
     # Optimize
-    # final_sols = nsga2.optimize(0.5)
-    # final_sols2 = nsga2.optimize(0.2)
-
-    # Tests
-    print(nsga2.solutions)
-    print()
-    nsga2.ranking()
-    for sol in nsga2.solutions:
-        print(sol)
-
-    nsga2.crowding_distance()
-    for sol in nsga2.solutions:
-        print(sol)
-
+    nsga2.optimize(0.5)
