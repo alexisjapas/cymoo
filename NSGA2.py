@@ -49,13 +49,13 @@ class NSGA2():
             sorted_crs[0][-1].crowding_distance = float("inf")
             for i_dim, dim_solutions in enumerate(sorted_crs):
                 for i in range(1, len(dim_solutions)-1):
-                    dim_solutions[i].crowding_distance += dim_solutions[i+1].solution[i_dim] - dim_solutions[i-1].solution[i_dim]
+                    dim_solutions[i].crowding_distance += (dim_solutions[i+1].solution[i_dim] - dim_solutions[i-1].solution[i_dim]) / (dim_solutions[-1].solution[i_dim] - dim_solutions[0].solution[i_dim])
         return 0
 
     def selection(self, ratio_kept):
-        self.solutions.sort(key=lambda sol: (sol.rank, sol.crowding_distance))
+        self.solutions.sort(key=lambda sol: (sol.rank, -sol.crowding_distance))
         self.solutions = self.solutions[:round(ratio_kept*self.population_size)]
-
+        return 0
 
     def relative_efficiency(self, X, Y, optim_direction):
         """
