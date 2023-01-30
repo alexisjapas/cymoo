@@ -5,9 +5,10 @@ from Solution import Solution
 
 
 class NSGA2():
-    def __init__(self, problem):
+    def __init__(self, problem, nSolution, minDepth, maxDepth):
         self.problem = problem
-        self.solutions = problem.populate()
+        self.solutions = problem.populate(nSolution, minDepth, maxDepth)
+
 
     def ranking(self):
         """

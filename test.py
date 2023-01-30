@@ -1,9 +1,10 @@
 from Neo4jConnector import Neo4jConnector
-from graph import Network
+from Network import Network
 import random
 import os
 from dotenv import load_dotenv
 import time
+from math import sqrt
 load_dotenv()
 
 if __name__ == "__main__":
@@ -12,36 +13,45 @@ if __name__ == "__main__":
     
     reseau = Network();
 
-    paramsLayerOne = {
-        'puissance': lambda: random.randint(1,10),
-        'position': lambda: (random.randint(-10,10),random.randint(-10,10)),
-        'debitTraitement': lambda: 1,
+    paramsLayerOne = {  
+        'unit':{
+        'tag': 'DEVICE',
+        'puissance': lambda: random.randint(25,100),
+        'positionx': lambda: random.randint(-10,10),
+        'positiony': lambda: random.randint(-10,10),
+        'debitTraitement': lambda: .5,
         'pollution': lambda: 1,
-        'cout': lambda: 1,
+        'cout': 1,
+        },
+        'cable':{
+        'distance': lambda x,y: sqrt(pow(x.positionx-y.positionx,2)+pow(x.positiony-y.positiony,2)),
         'vitesse': lambda: 1,
         'debit': lambda: 1,
-        'nNextLayer': lambda: random.randint(0,3)
+        },
+        'numberNewUnits': 2
     }
 
     paramsLayerTwo = {
+        'unit':{
         'puissance': lambda: random.randint(25,100),
-        'position': lambda: (random.randint(-10,10),random.randint(-10,10)),
+        'positionx': lambda x: x.positionx+random.randint(-1,1),
+        'positiony': lambda: random.randint(-10,10),
         'debitTraitement': lambda: .5,
         'pollution': lambda: 1,
         'cout': lambda: 1,
+        },
+        'cable':{
         'vitesse': lambda: 1,
         'debit': lambda: 1,
-        'nNextLayer': lambda: random.randint(0,3)
+        },
+        'numberNewUnits': lambda: random.randint(0,3)
     }
 
-    reseau.generateSimpleStructure(1, [paramsLayerOne, paramsLayerTwo, paramsLayerOne])
+    reseau.generateBasicNetwork([paramsLayerOne, paramsLayerOne, paramsLayerOne])
 
-    for i in reseau.devices:
-        print(i)
-    for i in reseau.cables:
-        print(i)
 
-    query = reseau.uploadToNeo4J()
+    query = reseau.toNeo4j()
+    print(query)
     a.run(a.WRITE, query)
     a.close()
 
