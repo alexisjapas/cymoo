@@ -1,16 +1,13 @@
+from random import choices, randint, gauss, uniform
+from time import sleep
+
 from Solution import Solution
 
 
 class NSGA2():
-    def __init__(self, X, optim_direction):
-        self.population_size = len(X)
-        self.X = X
-        self.solutions = [Solution(i, x) for i, x in enumerate(X)]
-        self.optim_direction = optim_direction
-
-    def default_solutions(self, X):
-        self.solutions = [Solution(i, x) for i, x in enumerate(X)]
-        return 0
+    def __init__(self, problem):
+        self.problem = problem
+        self.solutions = problem.populate()
 
     def ranking(self):
         """
@@ -24,7 +21,7 @@ class NSGA2():
             undominated_values = solutions.copy()
             for sol in solutions:
                 for sol_bis in solutions:
-                    if all([sol_bis.solution[i] < sol.solution[i] if opti_dir == 'min' else sol_bis.solution[i] > sol.solution[i] for i, opti_dir in enumerate(self.optim_direction)]):
+                    if all([sol_bis.solution[i] < sol.solution[i] if opti_dir == 'min' else sol_bis.solution[i] > sol.solution[i] for i, opti_dir in enumerate(self.problem.optim_directions)]):
                         sol.rank = rank
                         dominated_values.append(sol)
                         undominated_values.remove(sol)
@@ -57,53 +54,59 @@ class NSGA2():
         self.solutions = self.solutions[:round(ratio_kept*self.population_size)]
         return 0
 
-    def relative_efficiency(self, X, Y, optim_direction):
-        """
-        DEPRECATED. Number of solutions of X undominated by Y solutions.
-        """
-        undominated_values = X
-        for x in X:
-            for y in Y:
-                if all([y[i] < x[i] if opti_dir == 'min' else y[i] > x[i] for i, opti_dir in enumerate(optim_direction)]):
-                    if x in undominated_values:
-                        undominated_values.remove(x)
-                    break
+    def offspring_generation(self, mutation_strength):
+        parents = self.solutions.copy()
+        while len(self.solutions) < self.population_size:
+            # tournament - select two parent, each between 2 individuals depending on their rank and crowding distance
+            parent_1 = choices(parents, k=2)
+            parent_1.sort(key=lambda sol: (sol.rank, -sol.crowding_distance))
+            parent_1 = parent_1[0]
+            parent_2 = choices(parents, k=2)
+            parent_2.sort(key=lambda sol: (sol.rank, -sol.crowding_distance))
+            parent_2 = parent_2[1]
 
-        return len(undominated_values)
+            # crossover - pick randomly (uniform) genes from parent_1 or parent_2
+            #child_solution = [parent_1.solution[i] if randint(0, 1) else parent_2.solution[i] for i in range(len(self.optim_direction))]
+            child_solution = self.problem.crossover(parent_1, parent_2)
+
+            # mutation
+            child_solution = self.problem.mutate(child_solution)
+
+            # if solution not in solutions then adopt child
+            if not child_solution in [sol.solution for sol in self.solutions]:
+                Solution.max_id += 1
+                self.solutions.append(child_solution)
+        return 0
 
     def optimize(self, ratio_kept):
-        self.default_solutions(self.X)
-        for sol in nsga2.solutions:
-            print(sol)
-        print()
-
         self.ranking()
-        for sol in nsga2.solutions:
-            print(sol)
-        print()
-
         self.crowding_distance()
-        for sol in nsga2.solutions:
-            print(sol)
-        print()
-
         self.solutions.sort(key=lambda sol: sol.id, reverse=True)
-        for sol in nsga2.solutions:
-            print(sol)
-        print()
-
         self.selection(ratio_kept)
-        for sol in nsga2.solutions:
-            print(sol)
-        print()
+        self.offspring_generation(0.1)
+
 
 if __name__ == "__main__":
+    from matplotlib import pyplot as plt
+
+
     # Parameters
-    X = [(2.08, 5.34), (5.92, 2.08), (4.18, 3.69), (6.69, 6.67), (7.19, 1.8), (9.89, 8.49), (5.23, 7.41), (9.61, 7.28), (1.9, 6.48), (4.68, 1.47)]
+    population_size = 1000
     optim_dir = ["min", "min"]
+    X = [tuple(uniform(0, 100) for _ in range(len(optim_dir))) for _ in range(population_size)]
 
     # Initializing NSGA2
     nsga2 = NSGA2(X, optim_dir)
+    plt.ion()
+    figure, ax = plt.subplots()
+    val, = ax.plot([sol.solution[0] for sol in nsga2.solutions], [sol.solution[1] for sol in nsga2.solutions], 'bo')
 
     # Optimize
-    nsga2.optimize(0.5)
+    for _ in range(100):
+        nsga2.optimize(0.5)
+        val.set_xdata([sol.solution[0] for sol in nsga2.solutions])
+        val.set_ydata([sol.solution[1] for sol in nsga2.solutions])
+        figure.canvas.draw()
+        figure.canvas.flush_events()
+        sleep(0.1)
+    print("Optimization done successfully.")
