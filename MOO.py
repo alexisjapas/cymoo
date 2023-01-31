@@ -6,7 +6,6 @@ import random
 from math import sqrt
 import os
 from dotenv import load_dotenv
-from time import sleep
 from matplotlib import pyplot as plt, image as mpimg
 import imageio
 import io
@@ -47,7 +46,6 @@ class MOO:
             print(f"Iteration n°{n}")
             frames.append(_create_frame(n, max_x, max_y, max_z))
             self.optimizer.optimize(**kwargs)
-            sleep(0.1)
             n += 1
 
         imageio.mimsave("./img/test.gif", frames, fps = 1)
