@@ -8,7 +8,7 @@ class NSGA2():
     def __init__(self, problem, nSolution, minDepth, maxDepth):
         self.problem = problem
         self.solutions = problem.populate(nSolution, minDepth, maxDepth)
-
+        self.population_size = len(self.solutions)-1
 
     def ranking(self):
         """
@@ -43,11 +43,13 @@ class NSGA2():
         for rank in range(1, self.max_rank+1):
             current_rank_solutions = [sol for sol in self.solutions if sol.rank == rank]
             sorted_crs = [sorted(current_rank_solutions, key=lambda tup: tup.solution[t]) for t in range(len(current_rank_solutions[0].solution))]
-            sorted_crs[0][0].crowding_distance = float("inf")
-            sorted_crs[0][-1].crowding_distance = float("inf")
+            for i in range(len(sorted_crs)):
+                sorted_crs[i][0].crowding_distance = float("inf")
+                sorted_crs[i][-1].crowding_distance = float("inf")
             for i_dim, dim_solutions in enumerate(sorted_crs):
                 for i in range(1, len(dim_solutions)-1):
-                    dim_solutions[i].crowding_distance += (dim_solutions[i+1].solution[i_dim] - dim_solutions[i-1].solution[i_dim]) / (dim_solutions[-1].solution[i_dim] - dim_solutions[0].solution[i_dim])
+                    if dim_solutions[-1].solution[i_dim] - dim_solutions[0].solution[i_dim] != 0:
+                        dim_solutions[i].crowding_distance += (dim_solutions[i+1].solution[i_dim] - dim_solutions[i-1].solution[i_dim]) / (dim_solutions[-1].solution[i_dim] - dim_solutions[0].solution[i_dim])
         return 0
 
     def selection(self, ratio_kept):
@@ -55,7 +57,7 @@ class NSGA2():
         self.solutions = self.solutions[:round(ratio_kept*self.population_size)]
         return 0
 
-    def offspring_generation(self, mutation_strength):
+    def offspring_generation(self):
         parents = self.solutions.copy()
         while len(self.solutions) < self.population_size:
             # tournament - select two parent, each between 2 individuals depending on their rank and crowding distance
@@ -71,20 +73,21 @@ class NSGA2():
             child_solution = self.problem.crossover(parent_1, parent_2)
 
             # mutation
+            if child_solution is None:
+                continue
             child_solution = self.problem.mutate(child_solution)
 
             # if solution not in solutions then adopt child
-            if not child_solution in [sol.solution for sol in self.solutions]:
-                Solution.max_id += 1
-                self.solutions.append(child_solution)
+            #if not child_solution.parameters in [sol.parameters for sol in self.solutions]:
+            Solution.max_id += 1
+            self.solutions.append(child_solution)
         return 0
 
     def optimize(self, ratio_kept):
         self.ranking()
         self.crowding_distance()
-        self.solutions.sort(key=lambda sol: sol.id, reverse=True)
         self.selection(ratio_kept)
-        self.offspring_generation(0.1)
+        self.offspring_generation()
 
 
 if __name__ == "__main__":

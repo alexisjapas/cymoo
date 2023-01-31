@@ -9,17 +9,20 @@ class Path:
         self.cable: List[Cable] = []
         pass
 
-
     def addUnit(self, unit):
         self.unit.append(unit)
 
     def addCable(self, cable):
         self.cable.append(cable)
 
+    def createPath(self, units, cables):
+        self.unit = units
+        self.cable = cables
 
-    def toSolution(self, task):
-        id = Solution.max_id
-        Solution.max_id += 1
+    def toSolution(self, task, id=None):
+        if not id:
+            id = Solution.max_id
+            Solution.max_id += 1
         parameters = (self.unit, self.cable)
         solution = self.computeSolution(task)
         return Solution(id, solution, parameters)

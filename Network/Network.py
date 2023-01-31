@@ -5,11 +5,13 @@ import uuid
 import random
 
 class Network():
-    def __init__(self, startTag, task) -> None:
+    def __init__(self, startTag, task, optim_directions: list, mutation_rate: float) -> None:
         self.units = []
         self.cables = []
         self.startTag = startTag
         self.task = task
+        self.optim_directions = optim_directions
+        self.mutation_rate = mutation_rate
         pass
 
 
@@ -67,20 +69,45 @@ class Network():
                 self.cables.append(newCable)
         return True
 
-    def populate(self, nSolution: int, minDepth: int, maxDepth: int): ## TODO: Add tache cast
+    def populate(self, nSolution: int, minDepth: int, maxDepth: int):
         solutions = []
         for _ in range(nSolution):
             solutions.append(self.generatePath(random.randint(minDepth, maxDepth)).toSolution(self.task))
         return solutions
 
+    def crossover(self, path_1, path_2):
+        p_1 = path_1.parameters
+        p_2 = path_2.parameters
+        shared_units = [u for u in p_1[0] if u in p_2[0]]
+        new_solution = None
+        if shared_units:
+            chosen_one = random.choice(shared_units)
+            new_path_units = p_1[0][:p_1[0].index(chosen_one)+1] + p_2[0][p_2[0].index(chosen_one)+1:]
+            new_path_cables = p_1[1][:p_1[0].index(chosen_one)]+p_2[1][p_2[0].index(chosen_one):]
+            new_path = Path()
+            new_path.createPath(new_path_units, new_path_cables)
+            new_solution = new_path.toSolution(self.task)
+        return new_solution
+
+    def mutate(self, solution):
+        new_solution = solution
+        if solution.parameters[1] and random.uniform(0, 1) < self.mutation_rate:
+            last_new_unit_index = random.randint(1, len(solution.parameters[0])-1)
+            new_path_units = solution.parameters[0][:-last_new_unit_index]
+            new_path_cables = solution.parameters[1][:-last_new_unit_index]
+            new_path = Path()
+            new_path.createPath(new_path_units, new_path_cables)
+            new_solution = new_path.toSolution(self.task, id=solution.id)
+        return new_solution
+
     def generatePath(self, maxDepth: int):
         starting = random.choice([unit for unit in self.units if unit.tag == self.startTag])
-        
+
         def recursiveGeneratePath(unit: Unit, depth: int, path: Path):
+            path.addUnit(unit)
             if depth == maxDepth:
                 return path
             cable = random.choice(unit.cables)
-            path.addUnit(unit)
             path.addCable(cable)
             return recursiveGeneratePath(cable.getOtherUnit(unit), depth+1, path)
 
@@ -107,8 +134,4 @@ if __name__ == '__main__':
     net.generateBasicNetwork([{'numberNewUnits': 3, 'unit':{'power': lambda: random.random(), 'tag': lambda: 'DEVICE'}, 'cable':{'length': lambda: random.random()+1}}, {'numberNewUnits': 3, 'unit':{'power': lambda: random.random()+1}, 'cable':{'length': lambda: random.random()}}])
     print(net)
     print(net.toNeo4j())
-        
-        
-
-        
 
