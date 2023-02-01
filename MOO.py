@@ -29,7 +29,6 @@ class MOO:
             ax.set_xlabel("Time (s)")
             ax.set_ylabel("Cost (€)")
             ax.set_zlabel("Pollution (gCO2)")
-            ax.yaxis.set_ticks_position("left")
 
             ax.scatter(*tuple([sol.solution[i] for sol in self.optimizer.solutions] for i in range(len(self.problem.optim_directions))))
 
