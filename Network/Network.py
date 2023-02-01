@@ -69,10 +69,10 @@ class Network():
                 self.cables.append(newCable)
         return True
 
-    def populate(self, nSolution: int, minDepth: int, maxDepth: int):
+    def populate(self, nSolution: int, minDepth: int, maxDepth: int, nodeWeights = None):
         solutions = []
         for _ in range(nSolution):
-            solutions.append(self.generatePath(random.randint(minDepth, maxDepth)).toSolution(self.task))
+            solutions.append(self.generatePath(random.randint(minDepth, maxDepth), nodeWeights).toSolution(self.task))
         return solutions
 
     def crossover(self, path_1, path_2):
@@ -100,18 +100,22 @@ class Network():
             new_solution = new_path.toSolution(self.task, id=solution.id)
         return new_solution
 
-    def generatePath(self, maxDepth: int):
+    def generatePath(self, maxDepth: int, nodeWeights = None):
         starting = random.choice([unit for unit in self.units if unit.tag == self.startTag])
 
-        def recursiveGeneratePath(unit: Unit, depth: int, path: Path):
+        def recursiveGeneratePath(unit: Unit, depth: int, path: Path, nodeWeights = None):
             path.addUnit(unit)
             if depth == maxDepth:
                 return path
-            cable = random.choice(unit.cables)
+            if nodeWeights is not None:
+                weights = [nodeWeights[unit.id][cable.getOtherUnit(unit).id] for cable in unit.cables]
+                cable = random.choices(unit.cables, weights=weights, k=1)[0]
+            else:
+                cable = random.choice(unit.cables)
             path.addCable(cable)
-            return recursiveGeneratePath(cable.getOtherUnit(unit), depth+1, path)
+            return recursiveGeneratePath(cable.getOtherUnit(unit), depth+1, path, nodeWeights)
 
-        return recursiveGeneratePath(starting, 0, Path())
+        return recursiveGeneratePath(starting, 0, Path(), nodeWeights)
 
     def toNeo4j(self):
         expression = 'CREATE '

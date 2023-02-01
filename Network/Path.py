@@ -61,5 +61,13 @@ class Path:
         pollution += self.unit[-1].pollution * ( task.dataSize / self.unit[-1].debitTraitement + task.nInstruction/self.unit[-1].puissance )
         return pollution
 
+    def __str__(self) -> str:
+        expr = ''
+        for unit in self.unit:
+            expr += str(unit)+'\n'
+        for cable in self.cable:
+            expr += str(cable)+'\n'
+        return expr
+
 
     

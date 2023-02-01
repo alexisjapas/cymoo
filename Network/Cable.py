@@ -11,7 +11,6 @@ class Cable:
             setattr(self, key, value)
         self.frm.connect(self)
         self.to.connect(self)
-        print("Creation of cable: ", self)
 
     def getOtherUnit(self, unit: Unit):
         if unit == self.frm:
