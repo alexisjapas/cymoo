@@ -26,6 +26,10 @@ class MOO:
             ax.set_xlim3d(0, max_x)
             ax.set_ylim3d(0, max_y)
             ax.set_zlim3d(0, max_z)
+            ax.set_xlabel("Time (s)")
+            ax.set_ylabel("Cost (€)")
+            ax.set_zlabel("Pollution (gCO2)")
+            ax.yaxis.set_ticks_position("left")
 
             ax.scatter(*tuple([sol.solution[i] for sol in self.optimizer.solutions] for i in range(len(self.problem.optim_directions))))
 
@@ -119,6 +123,6 @@ if __name__ == "__main__":
 
     optimizer = NSGA2
 
-    moo = MOO(problem, optimizer, 3000, 10, 50)
-    moo.optimize(20, ratio_kept=0.5)
+    moo = MOO(problem, optimizer, 100, 10, 50)
+    moo.optimize(10, ratio_kept=0.5)
 
