@@ -16,7 +16,5 @@ class Solution:
 
 if __name__ == "__main__":
     sol = Solution(1, (2, 4), [])
-    print(sol)
     Solution.max_id = 10
-    print(Solution.max_id)
 

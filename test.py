@@ -31,7 +31,7 @@ if __name__ == "__main__":
         'vitesse': lambda: 1,
         'debit': lambda: 1,
         },
-        'numberNewUnits': 10
+        'numberNewUnits': 5
     }
 
     paramsLayerTwo = {
@@ -49,7 +49,7 @@ if __name__ == "__main__":
         'vitesse': lambda: 2,
         'debit': lambda: 3,
         },
-        'numberNewUnits': 20
+        'numberNewUnits': 2
     }
 
     paramsLayerThree = {
@@ -67,21 +67,30 @@ if __name__ == "__main__":
         'vitesse': lambda: 2,
         'debit': lambda: 3,
         },
-        'numberNewUnits': 10
+        'numberNewUnits': 2
     }
 
-    reseau.generateBasicNetwork([paramsLayerOne, paramsLayerTwo, paramsLayerThree])
+    reseau.generateBasicNetwork([paramsLayerOne, paramsLayerTwo, paramsLayerThree, paramsLayerTwo, paramsLayerThree])
+
+    queries = []
+
+
 
 
     fourmi = Fourmi(reseau)
 
-    query = fourmi.optimize(100, 10, Task(1000000,100))
-    for i in query:
-        print(i)
+    q = fourmi.optimize(1000, 1000, 10, Task(1000000,100))
+    for key1 in q:
+        for key2 in q[key1]:
+            queries.append(', (id'+str(key1)+')-[:WEIGHT {weight: '+str(q[key1][key2])+'}]->(id'+str(key2)+')\n')
     
-    # .toNeo4j()
-    # print(query)
-    # a.run(a.WRITE, query)
-    # a.close()
+    query = reseau.toNeo4j()
+    query = query.replace(';', '')
+    for quer in queries:
+        query += quer
+    query += ';'
+
+    a.run(a.WRITE, query)
+    a.close()
 
     print("DONE")

@@ -5,6 +5,7 @@ from Network.Path import Path
 from math import ceil
 from Task import Task
 from copy import deepcopy
+import time
 
 class Fourmi():
     def __init__(self, problem : Network) -> None:
@@ -12,32 +13,67 @@ class Fourmi():
         self.solutions = []
         
 
-    def optimize(self, nPath: int, pathDepth: int, task: Task): 
+    def optimize(self,nIter: int ,nPath: int, pathDepth: int, task: Task): 
         self.addFinalNode()
         self.initWeights()
-        for _ in range(nPath):
-            path = self.problem.generatePath(pathDepth, self.weights)
-            self.removeFinals(path)
-            self.solutions.append(path.toSolution(task))
+        self.solutions = []
+        for i in range(nIter):
+            start = time.time()
+            self.solutions.clear()
+            for _ in range(nPath):
+                path = self.problem.generatePath(pathDepth, self.weights)
+                self.removeFinals(path)
+                self.solutions.append(path.toSolution(task))
 
-        self.ranking()
-        self.updateWeights()
+            self.ranking()
+            self.updateWeights(ratio=.5, maximum=25)
+            temps = time.time() - start
+            print(f'Iter {i}/{nIter} : {temps} secondes')
+        self.normalizeWeights()
+        return self.weights
 
+    def normalizeWeights(self):
+        for i in self.weights.keys():
+            sumWeights = sum(self.weights[i].values())
+            for j in self.weights[i].keys():
+                if sumWeights != 0:
+                    self.weights[i][j] /= sumWeights
+                else:
+                    self.weights[i][j] = 1/len(self.weights[i].keys())
 
-        return self.solutions
-
-    def updateWeights(self, ratio):
-        assert ratio>.5, "Ratio can't be above .5"
+    def updateWeights(self, ratio, maximum):
+        assert ratio <= .5, "Ratio can't be above .5"
         rankDistribution = list(range(1,self.max_rank+1))
-        evalPoint= min(5, ceil(len(rankDistribution)*ratio))
-        positivDistrib = rankDistribution[:evalPoint]
-        negativDistrib = rankDistribution[len(rankDistribution)-evalPoint:]
-        positive = list(zip(positivDistrib, positivDistrib[::-1]))
-        negative = list(zip(negativDistrib, [-i for i in positivDistrib]))
-        positive = {i:j for i,j in positive}
-        negative = {i:j for i,j in negative}
-        
-        
+        evalPoint= min(maximum, ceil(len(rankDistribution)*ratio))
+        values = [0 for _ in rankDistribution]
+        for i in range(1, evalPoint+1):
+            values[-i] = -(evalPoint-(i-1))
+            values[i-1] = evalPoint-(i-1)
+        dicUpdate = dict(zip(rankDistribution, values))
+
+        for i in self.weights.keys():
+            for j in self.weights[i].keys():
+                self.weights[i][j] = (self.weights[i][j], [])
+
+        for i in self.solutions:
+            rank = i.rank
+            path = i.parameters[0]
+            for j in path[:-1]:
+                self.weights[j.id][path[path.index(j)+1].id][1].append(dicUpdate[rank])
+            self.weights[path[-1].id]['0'][1].append(dicUpdate[rank])
+
+        def mean(iter):
+            if iter == []:
+                return 0
+            sum = 0
+            for i in iter:
+                sum +=i
+            return sum/len(iter)
+
+        for key1 in self.weights.keys():
+            for key2 in self.weights[key1].keys():
+                self.weights[key1][key2] = max(0,self.weights[key1][key2][0] + round(mean(self.weights[key1][key2][1]),3))
+        return self.weights
         
     def addFinalNode(self):
         problem = self.problem
@@ -56,8 +92,10 @@ class Fourmi():
             for node2 in map(lambda x: x.getOtherUnit(node),node.cables):
                 if node.tag == 'FINAL' and node2.tag != 'FINAL':
                     self.weights[node.id][node2.id] = 0
-                else:
+                elif node2.tag == 'FINAL' and node.tag != 'FINAL':
                     self.weights[node.id][node2.id] = 1
+                else:
+                    self.weights[node.id][node2.id] = 10
         return 0
 
 

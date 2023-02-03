@@ -40,7 +40,6 @@ class Network():
                 return None
             # Number of new units
             numberNewUnits = self.generateParameters(parameters[0]['numberNewUnits'], unit)
-            print(numberNewUnits)
             # Generate the new units
             for _ in range(numberNewUnits):
                 id = str(uuid.uuid4()).replace('-','')
@@ -109,7 +108,10 @@ class Network():
                 return path
             if nodeWeights is not None:
                 weights = [nodeWeights[unit.id][cable.getOtherUnit(unit).id] for cable in unit.cables]
-                cable = random.choices(unit.cables, weights=weights, k=1)[0]
+                if (sum(weights)==0):
+                    cable = random.choice(unit.cables)
+                else:
+                    cable = random.choices(unit.cables, weights=weights, k=1)[0]
             else:
                 cable = random.choice(unit.cables)
             path.addCable(cable)
