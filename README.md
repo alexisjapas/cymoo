@@ -16,6 +16,29 @@ source venv/bin/activate
 python main.py
 ```
 
+## Nomanclature
+Follow [PEP 8 rules](https://peps.python.org/pep-0008/).
+
+### Camel or snake?
+Camel for variables and classes (but with uppercased first letter), snake for functions and methods.
+
+### Functions (or methods) defined in another function start with an underscore
+
+### imports
+```
+# external imports
+import time
+from copy import deepcopy
+
+# internal imports
+from Network import Network
+from Network.Unit import Unit
+
+
+# code
+class Fourmi:...
+```
+
 ## Diagrams
 ### Class
 ```mermaid
