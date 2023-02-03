@@ -21,8 +21,13 @@ class Unit():
         self.cables.append(cable);
 
     def toNeo4J(self):
-        dictionary = {key: value for key, value in self.__dict__.items() if key != 'id' and key != 'cables' and key != 'tag'}
-        return f'(id{self.id}:{self.tag} {dictionary})'.replace('\'', '')
+        dictionary = {key: value for key, value in self.__dict__.items() if key != 'cables' and key != 'tag'}
+        repr = f'(id{self.id}:{self.tag}'+'{'
+        for key, value in dictionary.items():
+            repr += f'{key}: "{value}", '
+        repr = repr[:-2]
+        repr += '})'
+        return repr
         
     def __str__(self) -> str:
         string = f'Unit: {self.id}, '
