@@ -22,9 +22,9 @@ class MOO:
     """
     TODO DOCSTRING
     """
-    def __init__(self, problem, optimizer, nSolutions, minDepth, maxDepth):
+    def __init__(self, problem, optimizer, nSolutions):
         self.problem = problem
-        self.optimizer = optimizer(problem, nSolutions, minDepth, maxDepth)
+        self.optimizer = optimizer(problem, nSolutions)
 
 
     def optimize(self, nIter, **kwargs):
@@ -69,8 +69,12 @@ if __name__ == "__main__":
     from matplotlib import pyplot as plt
 
 
+    #### PROBLEM DEFINITION
     task = Task(100000, 100)
-    problem = Network('DEVICE', task, ["min", "min", "min"], mutationRate=1)
+    problem = Network('DEVICE', task=task,
+                      optimDirections=["min", "min", "min"],
+                      minDepth=10, maxDepth=20,
+                      mutationRate=1)
 
     paramsLayerOne = {
         'unit': {
@@ -128,9 +132,9 @@ if __name__ == "__main__":
 
     problem.generate_basic_network([paramsLayerOne, paramsLayerTwo, paramsLayerThree])
 
-    #### NSGA2 OPTIMIZATION
+    #### OPTIMIZATION
     optimizer = NSGA2
 
-    moo = MOO(problem, optimizer, 100, 10, 50)
+    moo = MOO(problem, optimizer, nSolutions=100)
     moo.optimize(10, ratioKept=0.5)
 

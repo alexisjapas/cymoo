@@ -2,6 +2,7 @@ import time
 from copy import deepcopy
 from math import ceil
 
+from NSA import NSA
 from Network import Network
 from Network.Unit import Unit
 from Network.Cable import Cable
@@ -9,16 +10,16 @@ from Network.Path import Path
 from Task import Task
 
 
-class NSWGE():
+class NSWGE(NSA):
     """
     TODO docstring
     """
-    def __init__(self, problem: Network) -> None:
+    def __init__(self, problem: Network, nSolutions) -> None:
         self.problem = problem
         self.solutions = []
 
 
-    def optimize(self, nIter: int, nPath: int, pathDepth: int, task: Task):
+    def optimize(self, nIter: int, nPath: int, pathDepth: int):
         self.add_final_node()
         self.init_weights()
         self.solutions = []
@@ -26,9 +27,9 @@ class NSWGE():
             start = time.time()
             self.solutions.clear()
             for _ in range(nPath):
-                path = self.problem.generatePath(pathDepth, self.weights)
-                self.removeFinals(path)
-                self.solutions.append(path.toSolution(task))
+                path = self.problem.generate_path(pathDepth, self.weights)
+                self.remove_finals(path)
+                self.solutions.append(path.to_solution(self.problem.task))
 
             self.ranking()
             self.update_weights(ratio=.5, maximum=25)
@@ -98,7 +99,7 @@ class NSWGE():
         for node in self.problem.units:
             self.weights[node.id] = {}
             # get all linked Nodes
-            for node2 in map(lambda x: x.getOtherUnit(node),node.cables):
+            for node2 in map(lambda x: x.get_other_unit(node),node.cables):
                 if node.tag == 'FINAL' and node2.tag != 'FINAL':
                     self.weights[node.id][node2.id] = 0
                 elif node2.tag == 'FINAL' and node.tag != 'FINAL':
@@ -108,33 +109,6 @@ class NSWGE():
         return 0
 
 
-    def ranking(self):
-        """
-        Computes each rank of a set of solutions.
-        """
-        def _ranking(solutions, rank):
-            """
-            Recursive implementation of the function.
-            """
-            dominatedValues = []
-            undominatedValues = solutions.copy()
-            for sol in solutions:
-                for solBis in solutions:
-                    if all([solBis.solution[i] < sol.solution[i] if optiDir == 'min' else solBis.solution[i] > sol.solution[i] for i, optiDir in enumerate(self.problem.optim_directions)]):
-                        sol.rank = rank
-                        dominatedValues.append(sol)
-                        undominatedValues.remove(sol)
-                        break
-            for sol in undominatedValues:
-                self.solutions[self.solutions.index(sol)].rank = rank
-            if dominatedValues:
-                rank = _ranking(dominatedValues, rank+1)
-            return rank
-
-        self.maxRank = _ranking(self.solutions, 1)
-        return 0
-
-
-    def removeFinals(self, path: Path):
+    def remove_finals(self, path: Path):
         path.unit = [unit for unit in path.unit if unit.tag != 'FINAL']
         path.cable = path.cable[:len(path.unit)-1]

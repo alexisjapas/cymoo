@@ -10,12 +10,14 @@ class Network():
     """
     TODO DOCSTRING
     """
-    def __init__(self, startTag, task, optimDirections: list, mutationRate: float) -> None:
+    def __init__(self, startTag, task, optimDirections: list, minDepth: int, maxDepth: int, mutationRate: float) -> None:
         self.units = []
         self.cables = []
         self.startTag = startTag
         self.task = task
         self.optimDirections = optimDirections
+        self.minDepth = minDepth
+        self.maxDepth = maxDepth
         self.mutationRate = mutationRate
 
 
@@ -71,10 +73,10 @@ class Network():
         return True
 
 
-    def populate(self, nSolution: int, minDepth: int, maxDepth: int, nodeWeights=None):
+    def populate(self, nSolution: int, nodeWeights=None):
         solutions = []
         for _ in range(nSolution):
-            solutions.append(self.generate_path(random.randint(minDepth, maxDepth), nodeWeights).to_solution(self.task))
+            solutions.append(self.generate_path(random.randint(self.minDepth, self.maxDepth), nodeWeights).to_solution(self.task))
         return solutions
 
 

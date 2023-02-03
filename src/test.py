@@ -79,8 +79,6 @@ if __name__ == "__main__":
     queries = []
 
 
-
-
     fourmi = NSWGE(reseau)
 
     q = fourmi.optimize(1000, 1000, 10, Task(1000000,100))
