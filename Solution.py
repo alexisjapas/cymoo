@@ -1,7 +1,5 @@
 from dataclasses import dataclass
 from typing import ClassVar
-from typing import List
-from typing import Tuple
 
 
 @dataclass
@@ -10,11 +8,11 @@ class Solution:
     solution: tuple
     parameters: tuple
     rank: int = 0
-    crowding_distance: float = 0
-    max_id: ClassVar[int] = 0
+    crowdingDistance: float = 0
+    maxId: ClassVar[int] = 0
 
 
 if __name__ == "__main__":
     sol = Solution(1, (2, 4), [])
-    Solution.max_id = 10
+    Solution.maxId = 10
 

@@ -1,18 +1,22 @@
 from Neo4jConnector import Neo4jConnector
-from Network import Network
 import random
 import os
 from dotenv import load_dotenv
 import time
-from Fourmi import Fourmi
 from math import sqrt
+
+from Fourmi import Fourmi
 from Task import Task
+from Network import Network
+
+
 load_dotenv()
+
 
 if __name__ == "__main__":
 
     a = Neo4jConnector(os.environ['NEO4J_URI'], os.environ['NEO4J_USER'], os.environ['NEO4J_PASSWORD'], os.environ['NEO4J_DATABASE'])
-    
+
     task = Task(100000, 100)
     reseau = Network('DEVICE', task, ["min", "min", "min"], mutation_rate=1)
 
@@ -83,7 +87,7 @@ if __name__ == "__main__":
     for key1 in q:
         for key2 in q[key1]:
             queries.append(', (id'+str(key1)+')-[:WEIGHT {weight: '+str(q[key1][key2])+'}]->(id'+str(key2)+')\n')
-    
+
     query = reseau.toNeo4j()
     query = query.replace(';', '')
     for quer in queries:

@@ -5,10 +5,14 @@ from Solution import Solution
 
 
 class NSGA2():
-    def __init__(self, problem, nSolution, minDepth, maxDepth):
+    """
+    TODO DOCSTRING
+    """
+    def __init__(self, problem, nSolutions, minDepth, maxDepth):
         self.problem = problem
-        self.solutions = problem.populate(nSolution, minDepth, maxDepth)
-        self.population_size = len(self.solutions)-1
+        self.solutions = problem.populate(nSolutions, minDepth, maxDepth)
+        self.populationSize = len(self.solutions) - 1
+
 
     def ranking(self):
         """
@@ -18,75 +22,78 @@ class NSGA2():
             """
             Recursive implementation of the function.
             """
-            dominated_values = []
-            undominated_values = solutions.copy()
+            dominatedValues = []
+            undominatedValues = solutions.copy()
             for sol in solutions:
-                for sol_bis in solutions:
-                    if all([sol_bis.solution[i] < sol.solution[i] if opti_dir == 'min' else sol_bis.solution[i] > sol.solution[i] for i, opti_dir in enumerate(self.problem.optim_directions)]):
+                for solBis in solutions:
+                    if all([solBis.solution[i] < sol.solution[i] if optimDir == 'min' else solBis.solution[i] > sol.solution[i] for i, optimDir in enumerate(self.problem.optimDirections)]):
                         sol.rank = rank
-                        dominated_values.append(sol)
-                        undominated_values.remove(sol)
+                        dominatedValues.append(sol)
+                        undominatedValues.remove(sol)
                         break
-            for sol in undominated_values:
+            for sol in undominatedValues:
                 self.solutions[self.solutions.index(sol)].rank = rank
-            if dominated_values:
-                rank = _ranking(dominated_values, rank+1)
+            if dominatedValues:
+                rank = _ranking(dominatedValues, rank+1)
             return rank
 
-        self.max_rank = _ranking(self.solutions, 1)
+        self.maxRank = _ranking(self.solutions, 1)
         return 0
+
 
     def crowding_distance(self):
         """
         Computes crowding distance for each domination rank.
         """
-        for rank in range(1, self.max_rank+1):
-            current_rank_solutions = [sol for sol in self.solutions if sol.rank == rank]
-            sorted_crs = [sorted(current_rank_solutions, key=lambda tup: tup.solution[t]) for t in range(len(current_rank_solutions[0].solution))]
-            for i in range(len(sorted_crs)):
-                sorted_crs[i][0].crowding_distance = float("inf")
-                sorted_crs[i][-1].crowding_distance = float("inf")
-            for i_dim, dim_solutions in enumerate(sorted_crs):
-                for i in range(1, len(dim_solutions)-1):
-                    if dim_solutions[-1].solution[i_dim] - dim_solutions[0].solution[i_dim] != 0:
-                        dim_solutions[i].crowding_distance += (dim_solutions[i+1].solution[i_dim] - dim_solutions[i-1].solution[i_dim]) / (dim_solutions[-1].solution[i_dim] - dim_solutions[0].solution[i_dim])
+        for rank in range(1, self.maxRank+1):
+            currentRankSolutions = [sol for sol in self.solutions if sol.rank == rank]
+            sortedCrs = [sorted(currentRankSolutions, key=lambda tup: tup.solution[t]) for t in range(len(currentRankSolutions[0].solution))]
+            for i in range(len(sortedCrs)):
+                sortedCrs[i][0].crowdingDistance = float("inf")
+                sortedCrs[i][-1].crowdingDistance = float("inf")
+            for iDim, dimSolutions in enumerate(sortedCrs):
+                for i in range(1, len(dimSolutions)-1):
+                    if dimSolutions[-1].solution[iDim] - dimSolutions[0].solution[iDim] != 0:
+                        dimSolutions[i].crowdingDistance += (dimSolutions[i+1].solution[iDim] - dimSolutions[i-1].solution[iDim]) / (dimSolutions[-1].solution[iDim] - dimSolutions[0].solution[iDim])
         return 0
 
-    def selection(self, ratio_kept):
-        self.solutions.sort(key=lambda sol: (sol.rank, -sol.crowding_distance))
-        self.solutions = self.solutions[:round(ratio_kept*self.population_size)]
+
+    def selection(self, ratioKept):
+        self.solutions.sort(key=lambda sol: (sol.rank, -sol.crowdingDistance))
+        self.solutions = self.solutions[:round(ratioKept*self.populationSize)]
         return 0
+
 
     def offspring_generation(self):
         parents = self.solutions.copy()
-        while len(self.solutions) < self.population_size:
+        while len(self.solutions) < self.populationSize:
             # tournament - select two parent, each between 2 individuals depending on their rank and crowding distance
-            parent_1 = choices(parents, k=2)
-            parent_1.sort(key=lambda sol: (sol.rank, -sol.crowding_distance))
-            parent_1 = parent_1[0]
-            parent_2 = choices(parents, k=2)
-            parent_2.sort(key=lambda sol: (sol.rank, -sol.crowding_distance))
-            parent_2 = parent_2[1]
+            parent1 = choices(parents, k=2)
+            parent1.sort(key=lambda sol: (sol.rank, -sol.crowdingDistance))
+            parent1 = parent1[0]
+            parent2 = choices(parents, k=2)
+            parent2.sort(key=lambda sol: (sol.rank, -sol.crowdingDistance))
+            parent2 = parent2[1]
 
-            # crossover - pick randomly (uniform) genes from parent_1 or parent_2
-            #child_solution = [parent_1.solution[i] if randint(0, 1) else parent_2.solution[i] for i in range(len(self.optim_direction))]
-            child_solution = self.problem.crossover(parent_1, parent_2)
+            # crossover - pick randomly (uniform) genes from parent1 or parent2
+            childSolution = self.problem.crossover(parent1, parent2)
 
             # mutation
-            if child_solution is None:
+            if childSolution is None:
                 continue
-            child_solution = self.problem.mutate(child_solution)
+            childSolution = self.problem.mutate(childSolution)
 
             # if solution not in solutions then adopt child
-            #if not child_solution.parameters in [sol.parameters for sol in self.solutions]:
-            Solution.max_id += 1
-            self.solutions.append(child_solution)
+            #if not childSolution.parameters in [sol.parameters for sol in self.solutions]:
+            Solution.maxId += 1
+            self.solutions.append(childSolution)
         return 0
 
-    def optimize(self, ratio_kept):
+
+    def optimize(self, ratioKept):
         self.ranking()
         self.crowding_distance()
-        self.selection(ratio_kept)
+        self.selection(ratioKept)
         self.offspring_generation()
 
 
@@ -95,12 +102,12 @@ if __name__ == "__main__":
 
 
     # Parameters
-    population_size = 1000
-    optim_dir = ["min", "min"]
-    X = [tuple(uniform(0, 100) for _ in range(len(optim_dir))) for _ in range(population_size)]
+    populationSize = 1000
+    optimDir = ["min", "min"]
+    X = [tuple(uniform(0, 100) for _ in range(len(optimDir))) for _ in range(populationSize)]
 
     # Initializing NSGA2
-    nsga2 = NSGA2(X, optim_dir)
+    nsga2 = NSGA2(X, optimDir)
     plt.ion()
     figure, ax = plt.subplots()
     val, = ax.plot([sol.solution[0] for sol in nsga2.solutions], [sol.solution[1] for sol in nsga2.solutions], 'bo')

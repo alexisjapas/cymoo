@@ -1,65 +1,80 @@
-from typing import List
 from .Unit import Unit
 from .Cable import Cable
 from Solution import Solution
 
-class Path:
-    def __init__(self) -> None:
-        self.unit: List[Unit] = []
-        self.cable: List[Cable] = []
-        pass
 
-    def addUnit(self, unit):
+class Path:
+    """
+    TODO DOCSTRING
+    """
+    def __init__(self) -> None:
+        self.unit: list[Unit] = []
+        self.cable: list[Cable] = []
+
+
+    def add_unit(self, unit):
         self.unit.append(unit)
 
-    def addCable(self, cable):
+
+    def add_cable(self, cable):
         self.cable.append(cable)
 
-    def createPath(self, units, cables):
+
+    def create_path(self, units, cables):
         self.unit = units
         self.cable = cables
 
-    def toSolution(self, task, id=None):
+
+    def to_solution(self, task, id=None):
         if not id:
-            id = Solution.max_id
-            Solution.max_id += 1
+            id = Solution.maxId
+            Solution.maxId += 1
         parameters = (self.unit, self.cable)
-        solution = self.computeSolution(task)
+        solution = self.compute_solution(task)
         return Solution(id, solution, parameters)
 
-    def computeSolution(self, task):
-        time = self.computeTime(task)
-        cost = self.computeCost(task)
-        pollution = self.computePollution(task)
-        return (time, cost, pollution)
 
-    def computeTime(self, task):
-        time = task.nInstruction/self.unit[-1].puissance
-        latency = 0
+    def compute_solution(self, task):
+        processingTime = self.compute_processing_time(task)
+        cost = self.compute_cost(task)
+        pollution = self.compute_pollution(task)
+        return (processingTime, cost, pollution)
+
+
+    def compute_processing_time(self, task):
+        # Computing time
+        computingTime = task.nInstructions / self.unit[-1].computingSpeed
+
+        # Transit time
+        transitTime = 0
         for cable in self.cable:
-            latency += cable.distance/cable.vitesse + task.dataSize / cable.debit
+            transitTime += cable.distance / cable.propagationSpeed + task.dataSize / cable.flowRate
         for unit in self.unit[:-1]:
-            latency += task.dataSize / unit.debitTraitement
-        latency *= 2
-        latency += task.dataSize / self.unit[-1].debitTraitement
-        time += latency
-        return time
+            transitTime += task.dataSize / unit.throughput
+        transitTime *= 2
+        transitTime += task.dataSize / self.unit[-1].throughput
 
-    def computeCost(self, task):
+        # Processing time
+        return computingTime + transitTime
+
+
+    def compute_cost(self, task):
         cost = 0
         for unit in self.unit[:-1]:
-            cost += task.dataSize * unit.cost / unit.debitTraitement
+            cost += task.dataSize * unit.cost / unit.throughput
         cost *= 2
-        cost += self.unit[-1].cost * ( task.dataSize / self.unit[-1].debitTraitement + task.nInstruction/self.unit[-1].puissance )
+        cost += self.unit[-1].cost * (task.dataSize / self.unit[-1].throughput + task.nInstructions / self.unit[-1].computingSpeed)
         return cost
 
-    def computePollution(self, task):
+
+    def compute_pollution(self, task):
         pollution = 0
         for unit in self.unit[:-1]:
-            pollution += task.dataSize * unit.pollution / unit.debitTraitement
+            pollution += task.dataSize * unit.pollution / unit.throughput
         pollution *= 2
-        pollution += self.unit[-1].pollution * ( task.dataSize / self.unit[-1].debitTraitement + task.nInstruction/self.unit[-1].puissance )
+        pollution += self.unit[-1].pollution * (task.dataSize / self.unit[-1].throughput + task.nInstructions/self.unit[-1].computingSpeed)
         return pollution
+
 
     def __str__(self) -> str:
         expr = ''
@@ -69,5 +84,3 @@ class Path:
             expr += str(cable)+'\n'
         return expr
 
-
-    

@@ -2,6 +2,7 @@ from http.client import SERVICE_UNAVAILABLE
 import logging
 from neo4j import GraphDatabase, Neo4jDriver
 
+
 class Neo4jConnector:
 
     READ = 0
@@ -11,8 +12,10 @@ class Neo4jConnector:
         self.driver = GraphDatabase.driver(uri, auth=(user, password))
         self.database = database
 
+
     def close(self):
         self.driver.close()
+
 
     def run(self, execution, query, **kargs):
         with self.driver.session(database=self.database) as session:
@@ -24,7 +27,8 @@ class Neo4jConnector:
                 logging.error('Invalid Execution')
                 return []
 
-    @staticmethod   
+
+    @staticmethod
     def staticmethod(tx, query, **kargs):
         result = tx.run(query, kargs)
         try:
@@ -34,8 +38,10 @@ class Neo4jConnector:
                 query=query, exception=exception))
             raise
 
+
     def gen_static_method(self, query):
         return lambda tx, **kargs: self.staticmethod(tx, query, **kargs)
+
 
 if __name__ == '__main__':
     import os

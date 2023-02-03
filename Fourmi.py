@@ -1,21 +1,26 @@
+import time
+from copy import deepcopy
+from math import ceil
+
 from Network import Network
 from Network.Unit import Unit
 from Network.Cable import Cable
 from Network.Path import Path
-from math import ceil
 from Task import Task
-from copy import deepcopy
-import time
+
 
 class Fourmi():
-    def __init__(self, problem : Network) -> None:
+    """
+    TODO docstring
+    """
+    def __init__(self, problem: Network) -> None:
         self.problem = problem
         self.solutions = []
-        
 
-    def optimize(self,nIter: int ,nPath: int, pathDepth: int, task: Task): 
-        self.addFinalNode()
-        self.initWeights()
+
+    def optimize(self, nIter: int, nPath: int, pathDepth: int, task: Task):
+        self.add_final_node()
+        self.init_weights()
         self.solutions = []
         for i in range(nIter):
             start = time.time()
@@ -26,13 +31,14 @@ class Fourmi():
                 self.solutions.append(path.toSolution(task))
 
             self.ranking()
-            self.updateWeights(ratio=.5, maximum=25)
+            self.update_weights(ratio=.5, maximum=25)
             temps = time.time() - start
             print(f'Iter {i}/{nIter} : {temps} secondes')
-        self.normalizeWeights()
+        self.normalize_weights()
         return self.weights
 
-    def normalizeWeights(self):
+
+    def normalize_weights(self):
         for i in self.weights.keys():
             sumWeights = sum(self.weights[i].values())
             for j in self.weights[i].keys():
@@ -41,9 +47,10 @@ class Fourmi():
                 else:
                     self.weights[i][j] = 1/len(self.weights[i].keys())
 
-    def updateWeights(self, ratio, maximum):
+
+    def update_weights(self, ratio, maximum):
         assert ratio <= .5, "Ratio can't be above .5"
-        rankDistribution = list(range(1,self.max_rank+1))
+        rankDistribution = list(range(1, self.maxRank+1))
         evalPoint= min(maximum, ceil(len(rankDistribution)*ratio))
         values = [0 for _ in rankDistribution]
         for i in range(1, evalPoint+1):
@@ -62,7 +69,7 @@ class Fourmi():
                 self.weights[j.id][path[path.index(j)+1].id][1].append(dicUpdate[rank])
             self.weights[path[-1].id]['0'][1].append(dicUpdate[rank])
 
-        def mean(iter):
+        def _mean(iter):
             if iter == []:
                 return 0
             sum = 0
@@ -72,10 +79,11 @@ class Fourmi():
 
         for key1 in self.weights.keys():
             for key2 in self.weights[key1].keys():
-                self.weights[key1][key2] = max(0,self.weights[key1][key2][0] + round(mean(self.weights[key1][key2][1]),3))
+                self.weights[key1][key2] = max(0,self.weights[key1][key2][0] + round(_mean(self.weights[key1][key2][1]),3))
         return self.weights
-        
-    def addFinalNode(self):
+
+
+    def add_final_node(self):
         problem = self.problem
         newUnit = Unit('0', 'FINAL')
         problem.units.append(newUnit)
@@ -84,7 +92,8 @@ class Fourmi():
             problem.cables.append(cable)
         return problem
 
-    def initWeights(self):
+
+    def init_weights(self):
         self.weights = {}
         for node in self.problem.units:
             self.weights[node.id] = {}
@@ -107,23 +116,24 @@ class Fourmi():
             """
             Recursive implementation of the function.
             """
-            dominated_values = []
-            undominated_values = solutions.copy()
+            dominatedValues = []
+            undominatedValues = solutions.copy()
             for sol in solutions:
-                for sol_bis in solutions:
-                    if all([sol_bis.solution[i] < sol.solution[i] if opti_dir == 'min' else sol_bis.solution[i] > sol.solution[i] for i, opti_dir in enumerate(self.problem.optim_directions)]):
+                for solBis in solutions:
+                    if all([solBis.solution[i] < sol.solution[i] if optiDir == 'min' else solBis.solution[i] > sol.solution[i] for i, optiDir in enumerate(self.problem.optim_directions)]):
                         sol.rank = rank
-                        dominated_values.append(sol)
-                        undominated_values.remove(sol)
+                        dominatedValues.append(sol)
+                        undominatedValues.remove(sol)
                         break
-            for sol in undominated_values:
+            for sol in undominatedValues:
                 self.solutions[self.solutions.index(sol)].rank = rank
-            if dominated_values:
-                rank = _ranking(dominated_values, rank+1)
+            if dominatedValues:
+                rank = _ranking(dominatedValues, rank+1)
             return rank
 
-        self.max_rank = _ranking(self.solutions, 1)
+        self.maxRank = _ranking(self.solutions, 1)
         return 0
+
 
     def removeFinals(self, path: Path):
         path.unit = [unit for unit in path.unit if unit.tag != 'FINAL']
