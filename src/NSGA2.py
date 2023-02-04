@@ -12,7 +12,7 @@ class NSGA2(NSA):
     def __init__(self, problem, nSolutions):
         self.problem = problem
         self.solutions = problem.populate(nSolutions)
-        self.populationSize = len(self.solutions) - 1
+        self.nSolutions = self.nSolutions
 
 
     def crowding_distance(self):
@@ -34,13 +34,13 @@ class NSGA2(NSA):
 
     def selection(self, ratioKept):
         self.solutions.sort(key=lambda sol: (sol.rank, -sol.crowdingDistance))
-        self.solutions = self.solutions[:round(ratioKept*self.populationSize)]
+        self.solutions = self.solutions[:round(ratioKept*self.nSolutions)]
         return 0
 
 
     def offspring_generation(self):
         parents = self.solutions.copy()
-        while len(self.solutions) < self.populationSize:
+        while len(self.solutions) < self.nSolutions:
             # tournament - select two parent, each between 2 individuals depending on their rank and crowding distance
             parent1 = choices(parents, k=2)
             parent1.sort(key=lambda sol: (sol.rank, -sol.crowdingDistance))
@@ -70,28 +70,3 @@ class NSGA2(NSA):
         self.selection(ratioKept)
         self.offspring_generation()
 
-
-if __name__ == "__main__":
-    from matplotlib import pyplot as plt
-
-
-    # Parameters
-    populationSize = 1000
-    optimDir = ["min", "min"]
-    X = [tuple(uniform(0, 100) for _ in range(len(optimDir))) for _ in range(populationSize)]
-
-    # Initializing NSGA2
-    nsga2 = NSGA2(X, optimDir)
-    plt.ion()
-    figure, ax = plt.subplots()
-    val, = ax.plot([sol.solution[0] for sol in nsga2.solutions], [sol.solution[1] for sol in nsga2.solutions], 'bo')
-
-    # Optimize
-    for _ in range(100):
-        nsga2.optimize(0.5)
-        val.set_xdata([sol.solution[0] for sol in nsga2.solutions])
-        val.set_ydata([sol.solution[1] for sol in nsga2.solutions])
-        figure.canvas.draw()
-        figure.canvas.flush_events()
-        sleep(0.1)
-    print("Optimization done successfully.")
