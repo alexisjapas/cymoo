@@ -13,7 +13,7 @@ pip install -r requirements.txt
 
 ```bash
 source venv/bin/activate
-python main.py
+python src/MOO.py
 ```
 
 ## Nomenclature
