@@ -1,0 +1,10 @@
+site_name: NSWGE
+
+theme:
+  name: "material"
+
+plugins:
+  - mkdocstrings
+
+nav:
+  - NSWGE Docs: index.md
