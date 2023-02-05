@@ -9,10 +9,22 @@ class NSGA2(NSA):
     """
     TODO DOCSTRING
     """
-    def __init__(self, problem, nSolutions):
-        self.problem = problem
-        self.solutions = problem.populate(nSolutions)
-        self.nSolutions = self.nSolutions
+    def __init__(self, problem, nSolutions) -> None:
+        super().__init__(problem, nSolutions)
+
+
+    def optimize(self, ratioKept):
+        self.ranking()
+        self.crowding_distance()
+        self.selection(ratioKept)
+        self.offspring_generation()
+        super().optimize()
+
+        return 0
+
+
+    def post_optimization(self):
+        self.ranking()
 
 
     def crowding_distance(self):
@@ -57,6 +69,10 @@ class NSGA2(NSA):
                 continue
             childSolution = self.problem.mutate(childSolution)
 
+            # verify not already existing
+            if childSolution.parameters in [sol.parameters for sol in self.solutions]:
+                continue
+
             # if solution not in solutions then adopt child
             #if not childSolution.parameters in [sol.parameters for sol in self.solutions]:
             Solution.maxId += 1
@@ -64,9 +80,5 @@ class NSGA2(NSA):
         return 0
 
 
-    def optimize(self, ratioKept):
-        self.ranking()
-        self.crowding_distance()
-        self.selection(ratioKept)
-        self.offspring_generation()
-
+    def __str__(self):
+        return "NSGA2"

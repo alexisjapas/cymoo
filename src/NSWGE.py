@@ -15,28 +15,28 @@ class NSWGE(NSA):
     TODO docstring
     """
     def __init__(self, problem: Network, nSolutions) -> None:
-        self.problem = problem
-        self.solutions = []
-
-
-    def optimize(self, nIter: int, nPath: int, pathDepth: int):
+        super().__init__(problem, nSolutions)
         self.add_final_node()
         self.init_weights()
-        self.solutions = []
-        for i in range(nIter):
-            start = time.time()
-            self.solutions.clear()
-            for _ in range(nPath):
-                path = self.problem.generate_path(pathDepth, self.weights)
-                self.remove_finals(path)
-                self.solutions.append(path.to_solution(self.problem.task))
 
-            self.ranking()
-            self.update_weights(ratio=.5, maximum=25)
-            temps = time.time() - start
-            print(f'Iter {i}/{nIter} : {temps} secondes')
-        self.normalize_weights()
+
+    def optimize(self):
+        self.solutions.clear()
+        for _ in range(self.nSolutions):
+            path = self.problem.generate_path(self.problem.maxDepth, self.weights)
+            self.remove_finals(path)
+            self.solutions.append(path.to_solution(self.problem.task))
+
+        self.ranking()
+        self.update_weights(ratio=.5, maximum=25)
+
+        super().optimize()
         return self.weights
+
+
+    def post_optimization(self):
+        self.normalize_weights()
+        self.ranking()
 
 
     def normalize_weights(self):
@@ -112,3 +112,7 @@ class NSWGE(NSA):
     def remove_finals(self, path: Path):
         path.unit = [unit for unit in path.unit if unit.tag != 'FINAL']
         path.cable = path.cable[:len(path.unit)-1]
+
+
+    def __str__(self):
+        return "NSWGE"

@@ -39,3 +39,6 @@ class Unit():
                 string += f'{key}: {value}, '
         return string
 
+
+    def __repr__(self) -> str:
+        return f"UNIT: {self.id[-5:]}, TAG: {self.tag} >>>"
