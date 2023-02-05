@@ -16,7 +16,7 @@ source venv/bin/activate
 python main.py
 ```
 
-## Nomanclature
+## Nomenclature
 Follow [PEP 8 rules](https://peps.python.org/pep-0008/).
 
 ### Camel or snake?
