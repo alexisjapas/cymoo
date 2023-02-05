@@ -72,8 +72,8 @@ class MOO:
         self.optimizer.post_optimization()
 
         # Create GIF with frames of each iteration
-        imageio.mimsave(f"../img/{self.optimizer}.gif", frames, fps=1)
-        imageio.mimsave(f"../img/{self.optimizer}_pareto.gif", pareto_frames, fps=1)
+        imageio.mimsave(f"img/{self.optimizer}.gif", frames, fps=1)
+        imageio.mimsave(f"img/{self.optimizer}_pareto.gif", pareto_frames, fps=1)
 
         # Display final solutions and count
         print("Displaying pareto solutions...")
