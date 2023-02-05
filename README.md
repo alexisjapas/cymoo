@@ -1,4 +1,4 @@
-# ing3_meta-heuristique
+# cymoo
 
 ## Set up the project
 
