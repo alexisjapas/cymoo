@@ -1,6 +1,5 @@
-import random
-from math import sqrt
 import os
+import random
 from dotenv import load_dotenv
 from matplotlib import pyplot as plt, image as mpimg
 import imageio
@@ -9,12 +8,7 @@ from PIL import Image
 import numpy
 from tqdm import tqdm
 from time import sleep
-
-from Neo4jConnector import Neo4jConnector
-from Task import Task
-from NSGA2 import NSGA2
-from NSWGE import NSWGE
-from Network import Network
+from matplotlib import pyplot as plt
 
 
 load_dotenv()
@@ -24,13 +18,11 @@ class MOO:
     """
     TODO DOCSTRING
     """
-    def __init__(self, problem, optimizer, nSolutions):
+    def __init__(self, problem):
         self.problem = problem
-        self.optimizer = optimizer(problem, nSolutions)
 
 
-    def optimize(self, nIter, **kwargs):
-        print(f"Optimizing with {self.optimizer}...")
+    def optimize(self, optimizer, nSolutions, nIterations, seed=None, **kwargs):
         def _create_frame(t, pareto: bool, maxX, maxY, maxZ):
             fig = plt.figure()
             ax = fig.add_subplot(projection="3d")
@@ -59,16 +51,29 @@ class MOO:
             plt.close()
             return im
 
+        # set random seed for reproductivity
+        if seed is not None:
+            random.seed(seed)
+        else:
+            random.seed()
+
+        # reset and/or prepare problem for optimization
+        self.problem.pre_optimization()
+
+        # set optimizer
+        self.optimizer = optimizer(self.problem, nSolutions)
+
         # optimisation
+        print(f"Optimizing with {self.optimizer}...")
         maxX, maxY, maxZ = tuple(max([sol.solution[i] for sol in self.optimizer.solutions]) for i in range(len(self.problem.optimDirections)))
         frames = []
         pareto_frames = []
-        for n in tqdm(range(1, nIter+1)):
+        for n in tqdm(range(1, nIterations+1)):
             frames.append(_create_frame(n, False, maxX, maxY, maxZ))
             pareto_frames.append(_create_frame(n, True, maxX, maxY, maxZ))
             self.optimizer.optimize(**kwargs)
 
-        # POST OPTI (NSWGE norm)
+        # post optimization (NSWGE norm)
         self.optimizer.post_optimization()
 
         # Create GIF with frames of each iteration
@@ -82,104 +87,24 @@ class MOO:
             sleep(0.2)
         print()
 
-        return self.optimizer.pareto_solutions
+        return (self.optimizer.pareto_solutions, f"{optimizer}")
 
 
     @staticmethod
-    def relative_efficiency(X, Y, optimDirections):
+    def relative_efficiency(X, Y, optimDirections, verbose=False):
         """
         Number of solutions of X undominated by Y solutions.
         """
-        undominatedValues = X.copy()
-        for x in X:
-            for y in Y:
+        undominatedValues = X[0].copy()
+        for x in X[0]:
+            for y in Y[0]:
                 if all([y.solution[i] < x.solution[i] if opti_dir == 'min' else y.solution[i] > x.solution[i] for i, opti_dir in enumerate(optimDirections)]):
                     while x in undominatedValues:
                         undominatedValues.remove(x)
                     break
 
-        return len(undominatedValues) / len(X)
+        if verbose:
+            print(f"Relative efficiency: {round(len(undominatedValues) / len(X[0]) * 100)} % of {X[1]} solutions are undominated by {Y[1]} solutions")
 
-
-if __name__ == "__main__":
-    from matplotlib import pyplot as plt
-
-
-    #### PROBLEM DEFINITION
-    task = Task(100000, 100)
-    problem = Network('DEVICE', task=task,
-                      optimDirections=["min", "min", "min"],
-                      minDepth=10, maxDepth=20,
-                      mutationRate=1)
-
-    paramsLayerOne = {
-        'unit': {
-            'tag': 'DEVICE',
-            'computingSpeed': lambda: random.randint(5, 10),
-            'positionX': 0,
-            'positionY': 0,
-            'throughput': .5,
-            'pollution': lambda: round(random.random(), 2),
-            'cost': lambda: round(random.random(), 2),
-        },
-        'cable': {
-            'distance': lambda x,y: sqrt(pow(x.positionX-y.positionX, 2)+pow(x.positionY-y.positionY, 2)),
-            'propagationSpeed': lambda: 1,
-            'flowRate': lambda: 1,
-        },
-        'numberNewUnits': 10
-    }
-
-    paramsLayerTwo = {
-        'unit': {
-            'tag': 'FOG',
-            'computingSpeed': lambda x: x.computingSpeed*random.randint(5, 10),
-            'positionX': lambda x: x.positionX + random.randint(-2, 2),
-            'positionY': lambda x: x.positionY + random.randint(-2, 2),
-            'throughput': lambda x: x.throughput * round(random.random(), 2) * 2 + 1,
-            'pollution': lambda x: (x.pollution + 1) * (round(random.random(), 2) + 1),
-            'cost': lambda x: (x.cost + 1) * (round(random.random(), 2) + 1),
-        },
-        'cable': {
-            'distance': lambda x,y: sqrt(pow(x.positionX-y.positionX, 2) + pow(x.positionY-y.positionY, 2)),
-            'propagationSpeed': lambda: 2,
-            'flowRate': lambda: 3,
-        },
-        'numberNewUnits': 20
-    }
-
-    paramsLayerThree = {
-        'unit': {
-            'tag': 'CLOUD',
-            'computingSpeed': lambda x: x.computingSpeed * random.randint(50, 100),
-            'positionX': lambda x: x.positionX + random.randint(-5, 5),
-            'positionY': lambda x: x.positionY + random.randint(-5, 5),
-            'throughput': lambda x: x.throughput * round(random.random(), 2) * 3 + 1,
-            'pollution': lambda x: (x.pollution + 1) * (round(random.random(), 2) + 1),
-            'cost': lambda x: (x.cost + 1) * (round(random.random(), 2) + 1),
-        },
-        'cable': {
-            'distance': lambda x,y: sqrt(pow(x.positionX-y.positionX,2)+pow(x.positionY-y.positionY,2)),
-            'propagationSpeed': lambda: 2,
-            'flowRate': lambda: 3,
-        },
-        'numberNewUnits': 10
-    }
-
-    problem.generate_basic_network([paramsLayerOne, paramsLayerTwo, paramsLayerThree])
-
-    #### OPTIMIZATION
-    nIterations = 100
-    nSolutions = 1000
-
-    optimizer = NSGA2
-    moo_nsga2 = MOO(problem, optimizer, nSolutions=nSolutions)
-    nsga2_paretos = moo_nsga2.optimize(nIterations, ratioKept=0.5)
-
-    optimizer = NSWGE
-    moo_nswge = MOO(problem, optimizer, nSolutions=nSolutions)
-    nswge_paretos = moo_nswge.optimize(nIterations)
-
-    print(f"Relative efficiency: {round(MOO.relative_efficiency(nsga2_paretos, nswge_paretos, problem.optimDirections) * 100)}% of NSGA2 solutions are undominated by NSWGE solutions")
-    print(f"Relative efficiency: {round(MOO.relative_efficiency(nswge_paretos, nsga2_paretos, problem.optimDirections) * 100)}% of NSWGE solutions are undominated by NSGA2 solutions")
+        return len(undominatedValues) / len(X[0])
 

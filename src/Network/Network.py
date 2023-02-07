@@ -10,7 +10,7 @@ class Network():
     """
     TODO DOCSTRING
     """
-    def __init__(self, startTag, task, optimDirections: list, minDepth: int, maxDepth: int, mutationRate: float) -> None:
+    def __init__(self, startTag, task, optimDirections: list, minDepth: int, maxDepth: int, mutationRate: float, layers: list[dict]) -> None:
         self.units = []
         self.cables = []
         self.startTag = startTag
@@ -19,6 +19,11 @@ class Network():
         self.minDepth = minDepth
         self.maxDepth = maxDepth
         self.mutationRate = mutationRate
+        self.layers = layers
+
+
+    def pre_optimization(self):
+        self.generate_basic_network()
 
 
     def generate_parameters(self, expression, *parameters):
@@ -31,7 +36,7 @@ class Network():
             return expression
 
 
-    def generate_basic_network(self, parameters: list[dict]):
+    def generate_basic_network(self):
         self.units.clear()
         self.cables.clear()
 
@@ -59,17 +64,17 @@ class Network():
                 _generate_next_layer(newUnit, parameters[1:], units, cables)
 
         ## Check validity of parameters
-        assert isinstance(parameters, list) and all([isinstance(param, dict) for param in parameters]), "parameters must be a list of dict"
+        assert isinstance(self.layers, list) and all([isinstance(param, dict) for param in self.layers]), "self.layers must be a list of dict"
 
-        _generate_next_layer(None, parameters, self.units, self.cables)
+        _generate_next_layer(None, self.layers, self.units, self.cables)
         ## Link all the units with the same startTag
         startingUnits = [unit for unit in self.units if unit.tag == self.startTag]
         ## Create Couple of units
         ## Create cables between them
         for couple in [(startingUnits[i], startingUnits[j]) for i in range(len(startingUnits)) for j in range(i+1, len(startingUnits))]:
-                params = _generate_params(parameters[0]['cable'], couple[0], couple[1])
-                newCable = Cable(couple[0], couple[1], **params)
-                self.cables.append(newCable)
+            params = _generate_params(self.layers[0]['cable'], couple[0], couple[1])
+            newCable = Cable(couple[0], couple[1], **params)
+            self.cables.append(newCable)
         return True
 
 
