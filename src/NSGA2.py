@@ -20,8 +20,6 @@ class NSGA2(NSA):
         self.offspring_generation()
         super().optimize()
 
-        return 0
-
 
     def post_optimization(self):
         self.ranking()
@@ -32,22 +30,24 @@ class NSGA2(NSA):
         Computes crowding distance for each domination rank.
         """
         for rank in range(1, self.maxRank+1):
-            currentRankSolutions = [sol for sol in self.solutions if sol.rank == rank]
-            sortedCrs = [sorted(currentRankSolutions, key=lambda tup: tup.solution[t]) for t in range(len(currentRankSolutions[0].solution))]
-            for i in range(len(sortedCrs)):
-                sortedCrs[i][0].crowdingDistance = float("inf")
-                sortedCrs[i][-1].crowdingDistance = float("inf")
-            for iDim, dimSolutions in enumerate(sortedCrs):
-                for i in range(1, len(dimSolutions)-1):
-                    if dimSolutions[-1].solution[iDim] - dimSolutions[0].solution[iDim] != 0:
-                        dimSolutions[i].crowdingDistance += (dimSolutions[i+1].solution[iDim] - dimSolutions[i-1].solution[iDim]) / (dimSolutions[-1].solution[iDim] - dimSolutions[0].solution[iDim])
-        return 0
+            rankSolutions = [sol for sol in self.solutions if sol.rank == rank]
+            # for each dimension, sort solutions according to it and accumulate crowding distance.
+            for iDim in range(len(rankSolutions[0].solution)):
+                rankSolutions.sort(key=lambda tup: tup.solution[iDim])
+                rankSolutions[0].crowdingDistance = float("inf")
+                rankSolutions[-1].crowdingDistance = float("inf")
+                for s in range(1, len(rankSolutions)-1):
+                    dimensionDynamic = rankSolutions[-1].solution[iDim] - rankSolutions[0].solution[iDim]
+                    if dimensionDynamic != 0:
+                        rankSolutions[s].crowdingDistance += (rankSolutions[s+1].solution[iDim] - rankSolutions[s-1].solution[iDim]) / dimensionDynamic
 
 
     def selection(self, ratioKept):
+        """
+        Drop worst solutions according to their ranks (lower is better), if equal in rank, uses crowding distance to compare (higher is better)
+        """
         self.solutions.sort(key=lambda sol: (sol.rank, -sol.crowdingDistance))
         self.solutions = self.solutions[:round(ratioKept*self.nSolutions)]
-        return 0
 
 
     def offspring_generation(self):
@@ -77,7 +77,6 @@ class NSGA2(NSA):
             #if not childSolution.parameters in [sol.parameters for sol in self.solutions]:
             Solution.maxId += 1
             self.solutions.append(childSolution)
-        return 0
 
 
     def __str__(self):
