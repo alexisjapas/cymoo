@@ -1,11 +1,11 @@
 import os
 import random
-from dotenv import load_dotenv
-from matplotlib import pyplot as plt, image as mpimg
 import imageio
 import io
-from PIL import Image
 import numpy
+from dotenv import load_dotenv
+from matplotlib import pyplot as plt, image as mpimg
+from PIL import Image
 from tqdm import tqdm
 from time import sleep
 from matplotlib import pyplot as plt
@@ -23,6 +23,10 @@ class MOO:
 
 
     def optimize(self, optimizer, nSolutions, nIterations, seed=None, **kwargs):
+        """
+        Loop to uses the chosen optimizer to optimize solutions. At each iteration, create a matplotlib scatterplot. Uses plots at the end to generate a GIF.
+        A seed can be used for reproductivity.
+        """
         def _create_frame(t, pareto: bool, maxX, maxY, maxZ):
             fig = plt.figure()
             ax = fig.add_subplot(projection="3d")
@@ -93,7 +97,7 @@ class MOO:
     @staticmethod
     def relative_efficiency(X, Y, optimDirections, verbose=False):
         """
-        Number of solutions of X undominated by Y solutions.
+        Computes the number of solutions of X undominated by Y solutions. Verbose function enable to print results.
         """
         undominatedValues = X[0].copy()
         for x in X[0]:
