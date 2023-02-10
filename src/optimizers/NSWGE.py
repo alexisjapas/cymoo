@@ -2,12 +2,12 @@ import time
 from copy import deepcopy
 from math import ceil
 
-from NSA import NSA
-from Network import Network
-from Network.Unit import Unit
-from Network.Cable import Cable
-from Network.Path import Path
-from Task import Task
+from problems.Network import Network
+from problems.Unit import Unit
+from problems.Cable import Cable
+from problems.Path import Path
+from problems.Task import Task
+from .NSA import NSA
 
 
 class NSWGE(NSA):

@@ -1,11 +1,11 @@
 import random
 from math import sqrt
 
-from MOO import MOO
-from Task import Task
-from NSGA2 import NSGA2
-from NSWGE import NSWGE
-from Network import Network
+from moo.MOO import MOO
+from optimizers.NSGA2 import NSGA2
+from optimizers.NSWGE import NSWGE
+from problems.Task import Task
+from problems.Network import Network
 
 
 #### PROBLEM DEFINITION
@@ -73,15 +73,15 @@ problem = Network('DEVICE', task=task,
 
 
 #### OPTIMIZATION
-nIterations = 100
+nIterations = 10
 nSolutions = 1000
 seed = 10
 
 
 moo = MOO(problem)
 
-nswge_paretos = moo.optimize(NSWGE, nSolutions, nIterations, seed=seed)
 nsga2_paretos = moo.optimize(NSGA2, nSolutions, nIterations, seed=seed, ratioKept=0.5)
+nswge_paretos = moo.optimize(NSWGE, nSolutions, nIterations, seed=seed)
 
 
 #### DISPLAYING RESULTS

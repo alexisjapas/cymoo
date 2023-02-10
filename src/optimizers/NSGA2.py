@@ -1,8 +1,8 @@
 from random import choices, randint, gauss, uniform
 from time import sleep
 
-from NSA import NSA
-from Solution import Solution
+from moo.Solution import Solution
+from .NSA import NSA
 
 
 class NSGA2(NSA):

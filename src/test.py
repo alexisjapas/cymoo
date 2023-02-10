@@ -1,8 +1,8 @@
-from Neo4jConnector import Neo4jConnector
 import random
 import os
-from dotenv import load_dotenv
 import time
+from Neo4jConnector import Neo4jConnector
+from dotenv import load_dotenv
 from math import sqrt
 
 from NSWGE import NSWGE

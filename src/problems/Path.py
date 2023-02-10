@@ -1,6 +1,6 @@
+from moo.Solution import Solution
 from .Unit import Unit
 from .Cable import Cable
-from Solution import Solution
 
 
 class Path:

@@ -13,6 +13,7 @@ class Solution:
 
 
 if __name__ == "__main__":
-    sol = Solution(1, (2, 4), [])
+    sol = Solution(1, (2, 4), parameters=[])
     Solution.maxId = 10
+    print(sol)
 
