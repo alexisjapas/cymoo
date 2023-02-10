@@ -17,37 +17,47 @@ class NSA(ABC):
 
 
     @abstractmethod
-    def post_optimization(self):pass
+    def post_optimization(self):
+        pass
 
 
-    def ranking(self):
+    def ranking(self) -> int:
         """
-        Computes each rank of a set of solutions.
+        Computes domination rank of each solution of the population.
         """
-        def _ranking(solutions, rank):
+        def _ranking(solutions, rank) -> int:
             """
-            Recursive implementation of the function.
+            Set the rank of non-dominated solutions argument to rank argument.
+            This function is called recursively with remaining dominated solutions and rank set to rank+1 as long as there are any.
             """
+            # eliminates dominated solutions from undominated
             dominatedValues = []
             undominatedValues = solutions.copy()
             for sol in solutions:
                 for solBis in solutions:
+                    # if sol is dominated in all dimensions by another solution, then it is eliminated from the non-dominated solutions
                     if all([solBis.solution[i] < sol.solution[i] if optimDir == 'min' else solBis.solution[i] > sol.solution[i] for i, optimDir in enumerate(self.problem.optimDirections)]):
                         sol.rank = rank
                         dominatedValues.append(sol)
                         undominatedValues.remove(sol)
                         break
+
+            # set undominated solutions rank
             for sol in undominatedValues:
                 self.solutions[self.solutions.index(sol)].rank = rank
+
+            # recall if there are any dominated left otherwise returns the maximum rank
             if dominatedValues:
                 rank = _ranking(dominatedValues, rank+1)
             return rank
 
         self.maxRank = _ranking(self.solutions, 1)
-        return 0
 
 
     def get_pareto(self):
+        """
+        Returns unique pareto solutions of the population.
+        """
         # get pareto
         pareto_solutions = [sol for sol in self.solutions if sol.rank == 1]
 
