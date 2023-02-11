@@ -8,7 +8,7 @@ from problems.Task import Task
 from problems.Network import Network
 
 
-#### PROBLEM DEFINITION
+# PROBLEM DEFINITION
 task = Task(100000, 100)
 
 paramsLayerOne = {
@@ -22,7 +22,7 @@ paramsLayerOne = {
         'cost': lambda: round(random.random(), 2),
     },
     'cable': {
-        'distance': lambda x,y: sqrt(pow(x.positionX-y.positionX, 2)+pow(x.positionY-y.positionY, 2)),
+        'distance': lambda x, y: sqrt(pow(x.positionX-y.positionX, 2)+pow(x.positionY-y.positionY, 2)),
         'propagationSpeed': lambda: 1,
         'flowRate': lambda: 1,
     },
@@ -40,7 +40,7 @@ paramsLayerTwo = {
         'cost': lambda x: (x.cost + 1) * (round(random.random(), 2) + 1),
     },
     'cable': {
-        'distance': lambda x,y: sqrt(pow(x.positionX-y.positionX, 2) + pow(x.positionY-y.positionY, 2)),
+        'distance': lambda x, y: sqrt(pow(x.positionX-y.positionX, 2) + pow(x.positionY-y.positionY, 2)),
         'propagationSpeed': lambda: 2,
         'flowRate': lambda: 3,
     },
@@ -58,7 +58,7 @@ paramsLayerThree = {
         'cost': lambda x: (x.cost + 1) * (round(random.random(), 2) + 1),
     },
     'cable': {
-        'distance': lambda x,y: sqrt(pow(x.positionX-y.positionX,2)+pow(x.positionY-y.positionY,2)),
+        'distance': lambda x, y: sqrt(pow(x.positionX-y.positionX, 2)+pow(x.positionY-y.positionY, 2)),
         'propagationSpeed': lambda: 2,
         'flowRate': lambda: 3,
     },
@@ -72,7 +72,7 @@ problem = Network('DEVICE', task=task,
                   layers=[paramsLayerOne, paramsLayerTwo, paramsLayerThree])
 
 
-#### OPTIMIZATION
+# OPTIMIZATION
 nIterations = 10
 nSolutions = 1000
 seed = 10
@@ -84,7 +84,6 @@ nsga2_paretos = moo.optimize(NSGA2, nSolutions, nIterations, seed=seed, ratioKep
 nswge_paretos = moo.optimize(NSWGE, nSolutions, nIterations, seed=seed)
 
 
-#### DISPLAYING RESULTS
+# DISPLAYING RESULTS
 MOO.relative_efficiency(nswge_paretos, nsga2_paretos, problem.optimDirections, verbose=True)
 MOO.relative_efficiency(nsga2_paretos, nswge_paretos, problem.optimDirections, verbose=True)
-
