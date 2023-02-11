@@ -15,7 +15,6 @@ class Cable:
         self.frm.connect(self)
         self.to.connect(self)
 
-
     def get_other_unit(self, unit: Unit):
         if unit == self.frm:
             return self.to
@@ -24,12 +23,10 @@ class Cable:
         else:
             raise ValueError("The unit is not part of this cable")
 
-
     def to_Neo4j(self):
         dictionary = {key: value for key, value in self.__dict__.items() if key != 'frm' and key != 'to'}
         expression = f'(id{self.frm.id})-[:CABLE {dictionary}]->(id{self.to.id})'
         return expression.replace('\'', '')
-
 
     def __str__(self) -> str:
         expression = f'Cable: ({self.frm.id})-({self.to.id}), '

@@ -5,4 +5,3 @@ from dataclasses import dataclass
 class Task:
     nInstructions: int
     dataSize: int
-

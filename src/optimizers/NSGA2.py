@@ -1,5 +1,4 @@
-from random import choices, randint, gauss, uniform
-from time import sleep
+from random import choices
 
 from moo.Solution import Solution
 from .NSA import NSA
@@ -12,7 +11,6 @@ class NSGA2(NSA):
     def __init__(self, problem, nSolutions) -> None:
         super().__init__(problem, nSolutions)
 
-
     def optimize(self, ratioKept):
         self.ranking()
         self.crowding_distance()
@@ -20,10 +18,8 @@ class NSGA2(NSA):
         self.offspring_generation()
         super().optimize()
 
-
     def post_optimization(self):
         self.ranking()
-
 
     def crowding_distance(self):
         """
@@ -41,14 +37,12 @@ class NSGA2(NSA):
                     if dimensionDynamic != 0:
                         rankSolutions[s].crowdingDistance += (rankSolutions[s+1].solution[iDim] - rankSolutions[s-1].solution[iDim]) / dimensionDynamic
 
-
     def selection(self, ratioKept):
         """
         Drop worst solutions according to their ranks (lower is better), if equal in rank, uses crowding distance (higher is better).
         """
         self.solutions.sort(key=lambda sol: (sol.rank, -sol.crowdingDistance))
         self.solutions = self.solutions[:round(ratioKept*self.nSolutions)]
-
 
     def offspring_generation(self):
         """
@@ -79,10 +73,8 @@ class NSGA2(NSA):
                 continue
 
             # if solution not in solutions then adopt child
-            #if not childSolution.parameters in [sol.parameters for sol in self.solutions]:
             Solution.maxId += 1
             self.solutions.append(childSolution)
-
 
     def __str__(self):
         return "NSGA2"

@@ -11,19 +11,15 @@ class Path:
         self.unit: list[Unit] = []
         self.cable: list[Cable] = []
 
-
     def add_unit(self, unit):
         self.unit.append(unit)
-
 
     def add_cable(self, cable):
         self.cable.append(cable)
 
-
     def create_path(self, units, cables):
         self.unit = units
         self.cable = cables
-
 
     def to_solution(self, task, id=None):
         if not id:
@@ -33,13 +29,11 @@ class Path:
         solution = self.compute_solution(task)
         return Solution(id, solution, parameters)
 
-
     def compute_solution(self, task):
         processingTime = self.compute_processing_time(task)
         cost = self.compute_cost(task)
         pollution = self.compute_pollution(task)
         return (processingTime, cost, pollution)
-
 
     def compute_processing_time(self, task):
         # Computing time
@@ -57,7 +51,6 @@ class Path:
         # Processing time
         return computingTime + transitTime
 
-
     def compute_cost(self, task):
         cost = 0
         for unit in self.unit[:-1]:
@@ -65,7 +58,6 @@ class Path:
         cost *= 2
         cost += self.unit[-1].cost * (task.dataSize / self.unit[-1].throughput + task.nInstructions / self.unit[-1].computingSpeed)
         return cost
-
 
     def compute_pollution(self, task):
         pollution = 0
@@ -75,7 +67,6 @@ class Path:
         pollution += self.unit[-1].pollution * (task.dataSize / self.unit[-1].throughput + task.nInstructions/self.unit[-1].computingSpeed)
         return pollution
 
-
     def __str__(self) -> str:
         expr = ''
         for unit in self.unit:
@@ -83,4 +74,3 @@ class Path:
         for cable in self.cable:
             expr += str(cable)+'\n'
         return expr
-

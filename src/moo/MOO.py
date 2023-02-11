@@ -1,10 +1,8 @@
-import os
 import random
 import imageio
 import io
 import numpy
 from dotenv import load_dotenv
-from matplotlib import pyplot as plt, image as mpimg
 from PIL import Image
 from tqdm import tqdm
 from time import sleep
@@ -21,7 +19,6 @@ class MOO:
     def __init__(self, problem):
         self.problem = problem
 
-
     def optimize(self, optimizer, nSolutions, nIterations, seed=None, **kwargs):
         """
         Loop to uses the chosen optimizer to optimize solutions. At each iteration, create a matplotlib scatterplot. Uses plots at the end to generate a GIF.
@@ -33,7 +30,7 @@ class MOO:
 
             if pareto:
                 maxX, maxY, maxZ = tuple(max([sol.solution[i] for sol in self.optimizer.pareto_solutions]) for i in range(len(self.problem.optimDirections)))
-                values = tuple([sol.solution[i] for sol in self.optimizer.pareto_solutions] for i in range(len(self.problem.optimDirections)));
+                values = tuple([sol.solution[i] for sol in self.optimizer.pareto_solutions] for i in range(len(self.problem.optimDirections)))
                 ax.scatter(*values)
                 plt.title(f'{self.optimizer} - Pareto optimums: {len(values[0])} values\nIteration n°{t}', fontsize=12)
             else:
@@ -48,7 +45,7 @@ class MOO:
             ax.set_zlabel("Pollution (gCO2)")
 
             imgBuf = io.BytesIO()
-            plt.savefig(imgBuf, transparent = False, facecolor = 'white')
+            plt.savefig(imgBuf, transparent=False, facecolor='white')
             im = Image.open(imgBuf)
             im = numpy.array(im)
             imgBuf.close()
@@ -92,7 +89,6 @@ class MOO:
         print()
 
         return (self.optimizer.pareto_solutions, f"{optimizer}")
-
 
     @staticmethod
     def relative_efficiency(X, Y, optimDirections, verbose=False):

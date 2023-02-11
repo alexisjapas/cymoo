@@ -10,16 +10,13 @@ class NSA(ABC):
         self.ranking()
         self.get_pareto()
 
-
     @abstractmethod
     def optimize(self):
         self.get_pareto()
 
-
     @abstractmethod
     def post_optimization(self):
         pass
-
 
     def ranking(self) -> int:
         """
@@ -52,7 +49,6 @@ class NSA(ABC):
             return rank
 
         self.maxRank = _ranking(self.solutions, 1)
-
 
     def get_pareto(self):
         """
