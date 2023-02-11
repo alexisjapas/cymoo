@@ -1,23 +1,38 @@
 # cymoo
+`cymoo` is a simple and generic package for multi-objective optimization.
+<p align="center">
+    <img src="imgs/NSWGE.gif" alt="Animated example of optimization convergence"/>
+</p>
 
-## Set up the project
+## Installation
+Only [UNIX](https://en.wikipedia.org/wiki/Unix) systems are officially supported.
 
+### Development version
+Complete setup of the project
 ```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install --upgrade pip
-pip install -r requirements.txt
+# clone source files
+git clone https://github.com/alexisjapas/cymoo.git
+
+# move to the project folder
+cd cymoo
+
+# setup environment
+make
 ```
 
-## Run the project
+Activate environment
+```bash
+source venv/bin/activate
+```
 
+## Usage
+Run an optimization example
 ```bash
 source venv/bin/activate
 python src/main.py
 ```
 
-## Diagrams
-### Class
+## Project structure
 ```mermaid
 classDiagram
     class MOO{
@@ -103,3 +118,12 @@ classDiagram
         gen_static_method(str query)
     }
 ```
+
+## Code of Conduct
+`cymoo` has a [Code of Conduct](CODE_OF_CONDUCT.md) that should be honored by everyone who participates in the `cymoo` community.
+
+## Contributing
+Contributions are encouraged! Please read our [Contributing Guide](CONTRIBUTING.md) to get started.
+
+## License
+[GNU General Public License v3.0](LICENSE)
