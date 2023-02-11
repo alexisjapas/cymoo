@@ -32,8 +32,10 @@ class NSA(ABC):
             undominatedValues = solutions.copy()
             for sol in solutions:
                 for solBis in solutions:
-                    # if sol is dominated in all dimensions by another solution, then it is eliminated from the non-dominated solutions
-                    if all([solBis.solution[i] < sol.solution[i] if optimDir == 'min' else solBis.solution[i] > sol.solution[i] for i, optimDir in enumerate(self.problem.optimDirections)]):
+                    # if sol is dominated in all dimensions by another solution
+                    # then it is eliminated from the non-dominated solutions
+                    if all([solBis.solution[i] < sol.solution[i] if optimDir == 'min' else solBis.solution[i] > sol.solution[i]
+                            for i, optimDir in enumerate(self.problem.optimDirections)]):
                         sol.rank = rank
                         dominatedValues.append(sol)
                         undominatedValues.remove(sol)
