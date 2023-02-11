@@ -81,8 +81,8 @@ class MOO:
         self.optimizer.post_optimization()
 
         # Create GIF with frames of each iteration
-        imageio.mimsave(f"img/{self.optimizer}.gif", frames, fps=1)
-        imageio.mimsave(f"img/{self.optimizer}_pareto.gif", pareto_frames, fps=1)
+        imageio.mimsave(f"imgs/{self.optimizer}.gif", frames, fps=1)
+        imageio.mimsave(f"imgs/{self.optimizer}_pareto.gif", pareto_frames, fps=1)
 
         # Display final solutions and count
         print("Displaying pareto solutions...")
@@ -111,4 +111,3 @@ class MOO:
             print(f"Relative efficiency: {round(len(undominatedValues) / len(X[0]) * 100)} % of {X[1]} solutions are undominated by {Y[1]} solutions")
 
         return len(undominatedValues) / len(X[0])
-
