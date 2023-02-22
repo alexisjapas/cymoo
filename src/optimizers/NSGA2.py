@@ -1,7 +1,7 @@
 from random import choices
 
-from moo.Solution import Solution
 from .NSA import NSA
+from moo.Solution import Solution
 
 
 class NSGA2(NSA):
@@ -11,14 +11,15 @@ class NSGA2(NSA):
     def __init__(self, problem, nSolutions) -> None:
         super().__init__(problem, nSolutions)
 
+    def pre_optimize(self):pass
+
     def optimize(self, ratioKept):
         self.ranking()
         self.crowding_distance()
         self.selection(ratioKept)
         self.offspring_generation()
-        super().optimize()
 
-    def post_optimization(self):
+    def post_optimize(self):
         self.ranking()
 
     def crowding_distance(self):

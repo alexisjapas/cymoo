@@ -59,7 +59,7 @@ class MOO:
             random.seed()
 
         # reset and/or prepare problem for optimization
-        self.problem.pre_optimization()
+        self.problem.pre_optimize()
 
         # set optimizer
         self.optimizer = optimizer(self.problem, nSolutions)
@@ -73,9 +73,10 @@ class MOO:
             frames.append(_create_frame(n, False, maxX, maxY, maxZ))
             pareto_frames.append(_create_frame(n, True, maxX, maxY, maxZ))
             self.optimizer.optimize(**kwargs)
+            self.optimizer.get_pareto()
 
         # post optimization (NSWGE norm)
-        self.optimizer.post_optimization()
+        self.optimizer.post_optimize()
 
         # Create GIF with frames of each iteration
         imageio.mimsave(f"imgs/{self.optimizer}.gif", frames, fps=1)

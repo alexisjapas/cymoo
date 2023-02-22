@@ -21,7 +21,7 @@ class Network():
         self.mutationRate = mutationRate
         self.layers = layers
 
-    def pre_optimization(self):
+    def pre_optimize(self):
         self.generate_basic_network()
 
     def generate_parameters(self, expression, *parameters):

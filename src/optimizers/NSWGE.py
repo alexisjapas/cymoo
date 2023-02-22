@@ -1,10 +1,10 @@
 from math import ceil
 
+from .NSA import NSA
 from problems.Network import Network
 from problems.Unit import Unit
 from problems.Cable import Cable
 from problems.Path import Path
-from .NSA import NSA
 
 
 class NSWGE(NSA):
@@ -16,6 +16,8 @@ class NSWGE(NSA):
         self.add_final_node()
         self.init_weights()
 
+    def pre_optimize(self):pass
+
     def optimize(self):
         self.solutions.clear()
         for _ in range(self.nSolutions):
@@ -26,10 +28,9 @@ class NSWGE(NSA):
         self.ranking()
         self.update_weights(ratio=.5, maximum=25)
 
-        super().optimize()
         return self.weights
 
-    def post_optimization(self):
+    def post_optimize(self):
         self.normalize_weights()
         self.ranking()
 

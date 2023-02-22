@@ -74,7 +74,7 @@ problem = Network('DEVICE', task=task,
 
 # OPTIMIZATION
 nIterations = 10
-nSolutions = 100
+nSolutions = 1000
 seed = 10
 
 

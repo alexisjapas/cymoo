@@ -1,22 +1,13 @@
 from abc import ABC, abstractmethod
 
+from .Optimizer import Optimizer
 
-class NSA(ABC):
-    @abstractmethod
-    def __init__(self, problem, nSolutions):
-        self.problem = problem
-        self.solutions = problem.populate(nSolutions)
-        self.nSolutions = nSolutions
+
+class NSA(Optimizer, ABC):
+    def __init__(self, problem, nSolutions) -> None:
+        super().__init__(problem, nSolutions)
         self.ranking()
         self.get_pareto()
-
-    @abstractmethod
-    def optimize(self):
-        self.get_pareto()
-
-    @abstractmethod
-    def post_optimization(self):
-        pass
 
     def ranking(self) -> int:
         """
