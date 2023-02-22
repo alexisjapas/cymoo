@@ -1,4 +1,4 @@
-from moo.Solution import Solution
+from problems.Solution import Solution
 from .Unit import Unit
 from .Cable import Cable
 

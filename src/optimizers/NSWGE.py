@@ -1,10 +1,10 @@
 from math import ceil
 
 from .NSA import NSA
-from problems.Network import Network
-from problems.Unit import Unit
-from problems.Cable import Cable
-from problems.Path import Path
+from problems.network.Network import Network
+from problems.network.Unit import Unit
+from problems.network.Cable import Cable
+from problems.network.Path import Path
 
 
 class NSWGE(NSA):

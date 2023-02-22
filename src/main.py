@@ -1,11 +1,11 @@
 import random
 from math import sqrt
 
-from moo.MOO import MOO
+from MOO import MOO
 from optimizers.NSGA2 import NSGA2
 from optimizers.NSWGE import NSWGE
-from problems.Task import Task
-from problems.Network import Network
+from problems.network.Task import Task
+from problems.network.Network import Network
 
 
 # PROBLEM DEFINITION

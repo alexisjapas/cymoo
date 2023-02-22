@@ -1,12 +1,13 @@
 import uuid
 import random
 
+from problems.Problem import Problem
 from .Unit import Unit
 from .Cable import Cable
 from .Path import Path
 
 
-class Network():
+class Network(Problem):
     """
     TODO DOCSTRING
     """
@@ -23,6 +24,8 @@ class Network():
 
     def pre_optimize(self):
         self.generate_basic_network()
+
+    def post_optimize(self):pass
 
     def generate_parameters(self, expression, *parameters):
         if callable(expression):

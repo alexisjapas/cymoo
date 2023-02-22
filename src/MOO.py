@@ -19,7 +19,7 @@ class MOO:
     def __init__(self, problem):
         self.problem = problem
 
-    def optimize(self, optimizer, nSolutions, nIterations, seed=None, **kwargs):
+    def optimize(self, optimizer, nSolutions, nIterations, save_dir="imgs", seed=None, **kwargs):
         """
         Loop to uses the chosen optimizer to optimize solutions. At each iteration, create a matplotlib scatterplot. Uses plots at the end to generate a GIF.
         A seed can be used for reproductivity.
@@ -79,8 +79,8 @@ class MOO:
         self.optimizer.post_optimize()
 
         # Create GIF with frames of each iteration
-        imageio.mimsave(f"imgs/{self.optimizer}.gif", frames, fps=1)
-        imageio.mimsave(f"imgs/{self.optimizer}_pareto.gif", pareto_frames, fps=1)
+        imageio.mimsave(f"{save_dir}/{self.optimizer}.gif", frames, fps=1)
+        imageio.mimsave(f"{save_dir}/{self.optimizer}_pareto.gif", pareto_frames, fps=1)
 
         # Display final solutions and count
         print("Displaying pareto solutions...")

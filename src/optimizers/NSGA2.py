@@ -1,7 +1,7 @@
 from random import choices
 
+from problems.Solution import Solution
 from .NSA import NSA
-from moo.Solution import Solution
 
 
 class NSGA2(NSA):
