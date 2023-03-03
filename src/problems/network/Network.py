@@ -5,18 +5,19 @@ from problems.Problem import Problem
 from .Unit import Unit
 from .Cable import Cable
 from .Path import Path
+from .Task import Task
 
 
 class Network(Problem):
     """
     TODO DOCSTRING
     """
-    def __init__(self, startTag, task, optimDirections: list, minDepth: int, maxDepth: int, mutationRate: float, layers: list[dict]) -> None:
+    def __init__(self, startTag, task, optimDirections: dict, minDepth: int, maxDepth: int, mutationRate: float, layers: list[dict]) -> None:
+        super().__init__(optimDirections)
         self.units = []
         self.cables = []
         self.startTag = startTag
         self.task = task
-        self.optimDirections = optimDirections
         self.minDepth = minDepth
         self.maxDepth = maxDepth
         self.mutationRate = mutationRate
@@ -77,41 +78,35 @@ class Network(Problem):
             self.cables.append(newCable)
         return True
 
-    def populate(self, nSolution: int, nodeWeights=None):
+    def populate(self, nSolution: int, nodeWeights=None) -> list[Path]:
         solutions = []
         for _ in range(nSolution):
-            solutions.append(self.generate_path(random.randint(self.minDepth, self.maxDepth), nodeWeights).to_solution(self.task))
+            solutions.append(self.generate_path(random.randint(self.minDepth, self.maxDepth), task=self.task, nodeWeights=nodeWeights))
         return solutions
 
-    def crossover(self, path1, path2):
-        p1 = path1.parameters
-        p2 = path2.parameters
-        sharedUnits = [u for u in p1[0] if u in p2[0]]
-        newSolution = None
+    def crossover(self, path1: Path, path2: Path) -> Path:
+        sharedUnits = [u for u in path1.parameters["units"] if u in path2.parameters["units"]]
+        childPath = None
         if sharedUnits:
             chosenOne = random.choice(sharedUnits)
-            newPathUnits = p1[0][:p1[0].index(chosenOne)+1] + p2[0][p2[0].index(chosenOne)+1:]
-            newPathCables = p1[1][:p1[0].index(chosenOne)] + p2[1][p2[0].index(chosenOne):]
-            newPath = Path()
-            newPath.create_path(newPathUnits, newPathCables)
-            newSolution = newPath.to_solution(self.task)
-        return newSolution
+            childPathUnits = path1.parameters["units"][:path1.parameters["units"].index(chosenOne)+1] + path2.parameters["units"][path2.parameters["units"].index(chosenOne)+1:]
+            childPathCables = path1.parameters["cables"][:path1.parameters["units"].index(chosenOne)] + path2.parameters["cables"][path2.parameters["units"].index(chosenOne):]
+            childPath = Path(units=childPathUnits, cables=childPathCables, task=self.task)
+        return childPath
 
-    def mutate(self, solution):
-        newSolution = solution
-        if solution.parameters[1] and random.uniform(0, 1) < self.mutationRate:
-            nUnitsToRemove = random.randint(1, len(solution.parameters[0])-1)
-            newPathUnits = solution.parameters[0][:-nUnitsToRemove]
-            newPathCables = solution.parameters[1][:-nUnitsToRemove]
-            newPath = Path()
-            newPath.create_path(newPathUnits, newPathCables)
-            newSolution = newPath.to_solution(self.task, id=solution.id)
-        return newSolution
+    def mutate(self, path: Path):
+        mutPath = path
+        if path.parameters["cables"] and random.uniform(0, 1) < self.mutationRate:
+            nUnitsToRemove = random.randint(1, len(path.parameters["units"])-1)
+            mutPathUnits = path.parameters["units"][:-nUnitsToRemove]
+            mutPathCables = path.parameters["cables"][:-nUnitsToRemove]
+            mutPath = Path(_id=path._id, units=mutPathUnits, cables=mutPathCables, task=self.task)
+        return mutPath
 
-    def generate_path(self, maxDepth: int, nodeWeights=None):
+    def generate_path(self, maxDepth: int, task: Task=None, nodeWeights=None) -> Path:
         starting = random.choice([unit for unit in self.units if unit.tag == self.startTag])
 
-        def _recursive_generate_path(unit: Unit, depth: int, path: Path, nodeWeights=None):
+        def _recursive_generate_path(unit: Unit, depth: int, path: Path, nodeWeights=None) -> Path:
             path.add_unit(unit)
             if depth == maxDepth:
                 return path
@@ -126,7 +121,10 @@ class Network(Problem):
             path.add_cable(cable)
             return _recursive_generate_path(cable.get_other_unit(unit), depth+1, path, nodeWeights)
 
-        return _recursive_generate_path(starting, 0, Path(), nodeWeights)
+        generatedPath = _recursive_generate_path(starting, 0, Path(), nodeWeights)
+        if task is not None:
+            generatedPath.compute_solution(task)
+        return generatedPath
 
     def to_Neo4j(self):
         expression = 'CREATE '
@@ -150,3 +148,4 @@ if __name__ == '__main__':
     net.generate_basic_network([{'numberNewUnits': 3, 'unit': {'power': lambda: random.random(), 'tag': lambda: 'DEVICE'}, 'cable': {'length': lambda: random.random()+1}}, {'numberNewUnits': 3, 'unit': {'power': lambda: random.random()+1}, 'cable': {'length': lambda: random.random()}}])
     print(net)
     print(net.to_Neo4j())
+

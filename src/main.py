@@ -7,6 +7,8 @@ from optimizers.NSWGE import NSWGE
 from problems.network.Task import Task
 from problems.network.Network import Network
 
+from problems.Solution import Solution
+
 
 # PROBLEM DEFINITION
 task = Task(100000, 100)
@@ -66,24 +68,24 @@ paramsLayerThree = {
 }
 
 problem = Network('DEVICE', task=task,
-                  optimDirections=["min", "min", "min"],
+                  optimDirections={"processingTime": "min",
+                                   "cost": "min",
+                                   "pollution": "min"},
                   minDepth=10, maxDepth=20,
                   mutationRate=0.1,
                   layers=[paramsLayerOne, paramsLayerTwo, paramsLayerThree])
 
-
 # OPTIMIZATION
 nIterations = 10
 nSolutions = 1000
-seed = 10
+seed = None
 
 
 moo = MOO(problem)
 
 nsga2_paretos = moo.optimize(NSGA2, nSolutions, nIterations, seed=seed, ratioKept=0.5)
-nswge_paretos = moo.optimize(NSWGE, nSolutions, nIterations, seed=seed)
+#nswge_paretos = moo.optimize(NSWGE, nSolutions, nIterations, seed=seed)
 
 
 # DISPLAYING RESULTS
-MOO.relative_efficiency(nswge_paretos, nsga2_paretos, problem.optimDirections, verbose=True)
-MOO.relative_efficiency(nsga2_paretos, nswge_paretos, problem.optimDirections, verbose=True)
+#MOO.relative_efficiency(nswge_paretos, nsga2_paretos, Solution.optimDirections, verbose=True)
