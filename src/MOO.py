@@ -64,7 +64,7 @@ class MOO:
         # set optimizer
         self.optimizer = optimizer(self.problem, nSolutions)
 
-        # optimisation
+        # optimization
         print(f"Optimizing with {self.optimizer}...")
         maxX, maxY, maxZ = tuple(max([sol.solution[i] for sol in self.optimizer.solutions]) for i in range(len(self.problem.optimDirections)))
         frames = []
