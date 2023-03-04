@@ -1,8 +1,11 @@
 from abc import ABC, abstractmethod
 
+from .Solution import Solution
+
 
 class Problem(ABC):
-    def __init__(self):pass
+    def __init__(self, optimDirections):
+        Solution.optimDirections = optimDirections
 
     @abstractmethod
     def pre_optimize(self):pass

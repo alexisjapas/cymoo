@@ -1,5 +1,6 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 
+from problems.Solution import Solution
 from .Optimizer import Optimizer
 
 
@@ -16,7 +17,8 @@ class NSA(Optimizer, ABC):
         def _ranking(solutions, rank) -> int:
             """
             Set the rank of non-dominated solutions argument to rank argument.
-            This function is called recursively with remaining dominated solutions and rank set to rank+1 as long as there are any.
+            This function is called recursively with remaining dominated solutions and rank set to rank+1 as long as
+            there are any.
             """
             # eliminates dominated solutions from undominated
             dominatedValues = []
@@ -25,8 +27,9 @@ class NSA(Optimizer, ABC):
                 for solBis in solutions:
                     # if sol is dominated in all dimensions by another solution
                     # then it is eliminated from the non-dominated solutions
-                    if all([solBis.solution[i] < sol.solution[i] if optimDir == 'min' else solBis.solution[i] > sol.solution[i]
-                            for i, optimDir in enumerate(self.problem.optimDirections)]):
+                    if all([solBis.solution[dim] < sol.solution[dim] if optimDir == "min"
+                            else solBis.solution[dim] > sol.solution[dim]
+                            for dim, optimDir in Solution.optimDirections.items()]):
                         sol.rank = rank
                         dominatedValues.append(sol)
                         undominatedValues.remove(sol)

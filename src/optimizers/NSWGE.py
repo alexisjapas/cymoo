@@ -23,7 +23,8 @@ class NSWGE(NSA):
         for _ in range(self.nSolutions):
             path = self.problem.generate_path(self.problem.maxDepth, self.weights)
             self.remove_finals(path)
-            self.solutions.append(path.to_solution(self.problem.task))
+            path.compute_solution(self.problem.task)
+            self.solutions.append(path)
 
         self.ranking()
         self.update_weights(ratio=.5, maximum=25)
