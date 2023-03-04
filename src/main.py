@@ -5,15 +5,12 @@ from MOO import MOO
 from optimizers.NSGA2 import NSGA2
 from optimizers.NSWGE import NSWGE
 from optimizers.NSRA import NSRA
-from problems.network.Task import Task
-from problems.network.Network import Network
+from problems.multitask_routing.Task import Task
+from problems.multitask_routing.Network import Network
 
 from problems.Solution import Solution
 
-
 # PROBLEM DEFINITION
-task = Task(100000, 100)
-
 paramsLayerOne = {
     "unit": {
         "tag": "DEVICE",
@@ -68,27 +65,30 @@ paramsLayerThree = {
     "numberNewUnits": 10,
 }
 
+tasks = tuple(Task(random.randint(1, 1000), random.randint(1, 1000)) for _ in range(3))
+
 problem = Network(
     "DEVICE",
-    task=task,
+    tasks=tasks,
     optimDirections={"processingTime": "min", "cost": "min", "pollution": "min"},
     minDepth=10,
     maxDepth=20,
     mutationRate=0.1,
-    layers=[paramsLayerOne, paramsLayerTwo, paramsLayerThree],
+    layers=[paramsLayerOne, paramsLayerTwo, paramsLayerTwo, paramsLayerThree],
 )
 
 # OPTIMIZATION
-nIterations = 100
+nIterations = 10
 nSolutions = 1000
-seed = 11
+seed = 10
 
 
 moo = MOO(problem)
 
 nsga2_paretos = moo.optimize(NSGA2, nSolutions, nIterations, seed=seed, ratioKept=0.5)
+nsra_paretos = moo.optimize(NSRA, nSolutions, nIterations, seed=seed, ratioKept=0.5)
 # nswge_paretos = moo.optimize(NSWGE, nSolutions, nIterations, seed=seed)
 
 
 # DISPLAYING RESULTS
-# MOO.relative_efficiency(nswge_paretos, nsga2_paretos, Solution.optimDirections, verbose=True)
+MOO.relative_efficiency(nsra_paretos, nsga2_paretos, Solution.optimDirections, verbose=True)
