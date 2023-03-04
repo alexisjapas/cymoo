@@ -28,10 +28,6 @@ class Path(Solution):
     def add_cable(self, cable):
         self.parameters["cables"].append(cable)
 
-    def create_path(self, units, cables):
-        self.parameters["units"] = units
-        self.parameters["cables"] = cables
-
     def compute_solution(self, task):
         processingTime = self.compute_processing_time(task)
         cost = self.compute_cost(task)
