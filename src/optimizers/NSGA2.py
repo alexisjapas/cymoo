@@ -8,10 +8,12 @@ class NSGA2(NSA):
     """
     TODO DOCSTRING
     """
+
     def __init__(self, problem, nSolutions) -> None:
         super().__init__(problem, nSolutions)
 
-    def pre_optimize(self):pass
+    def pre_optimize(self):
+        pass
 
     def optimize(self, ratioKept):
         self.ranking()
@@ -26,25 +28,26 @@ class NSGA2(NSA):
         """
         Computes crowding distance for each domination rank.
         """
-        for rank in range(1, self.maxRank+1):
+        for rank in range(1, self.maxRank + 1):
             rankSolutions = [sol for sol in self.solutions if sol.rank == rank]
             # for each dimension, sort solutions according to it and accumulate crowding distance.
             for dim in Solution.optimDirections.keys():
                 rankSolutions.sort(key=lambda tup: tup.solution[dim])
                 rankSolutions[0].crowdingDistance = float("inf")
                 rankSolutions[-1].crowdingDistance = float("inf")
-                for s in range(1, len(rankSolutions)-1):
+                for s in range(1, len(rankSolutions) - 1):
                     dimensionDynamic = rankSolutions[-1].solution[dim] - rankSolutions[0].solution[dim]
                     if dimensionDynamic != 0:
-                        rankSolutions[s].crowdingDistance += (rankSolutions[s+1].solution[dim] -
-                                                              rankSolutions[s-1].solution[dim]) / dimensionDynamic
+                        rankSolutions[s].crowdingDistance += (
+                            rankSolutions[s + 1].solution[dim] - rankSolutions[s - 1].solution[dim]
+                        ) / dimensionDynamic
 
     def selection(self, ratioKept):
         """
         Drop worst solutions according to their ranks (lower is better), if equal in rank, uses crowding distance (higher is better).
         """
         self.solutions.sort(key=lambda sol: (sol.rank, -sol.crowdingDistance))
-        self.solutions = self.solutions[:round(ratioKept*self.nSolutions)]
+        self.solutions = self.solutions[: round(ratioKept * self.nSolutions)]
 
     def offspring_generation(self):
         """

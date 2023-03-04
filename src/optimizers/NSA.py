@@ -14,6 +14,7 @@ class NSA(Optimizer, ABC):
         """
         Computes domination rank of each solution of the population.
         """
+
         def _ranking(solutions, rank) -> int:
             """
             Set the rank of non-dominated solutions argument to rank argument.
@@ -27,9 +28,14 @@ class NSA(Optimizer, ABC):
                 for solBis in solutions:
                     # if sol is dominated in all dimensions by another solution
                     # then it is eliminated from the non-dominated solutions
-                    if all([solBis.solution[dim] < sol.solution[dim] if optimDir == "min"
+                    if all(
+                        [
+                            solBis.solution[dim] < sol.solution[dim]
+                            if optimDir == "min"
                             else solBis.solution[dim] > sol.solution[dim]
-                            for dim, optimDir in Solution.optimDirections.items()]):
+                            for dim, optimDir in Solution.optimDirections.items()
+                        ]
+                    ):
                         sol.rank = rank
                         dominatedValues.append(sol)
                         undominatedValues.remove(sol)
@@ -41,7 +47,7 @@ class NSA(Optimizer, ABC):
 
             # recall if there are any dominated left otherwise returns the maximum rank
             if dominatedValues:
-                rank = _ranking(dominatedValues, rank+1)
+                rank = _ranking(dominatedValues, rank + 1)
             return rank
 
         self.maxRank = _ranking(self.solutions, 1)

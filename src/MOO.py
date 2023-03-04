@@ -18,6 +18,7 @@ class MOO:
     """
     TODO DOCSTRING
     """
+
     def __init__(self, problem):
         self.problem = problem
 
@@ -27,21 +28,30 @@ class MOO:
         Uses plots at the end to generate a GIF.
         A seed can be used for reproductivity.
         """
+
         def _create_frame(t, pareto: bool, maxX, maxY, maxZ):
             fig = plt.figure()
             ax = fig.add_subplot(projection="3d")
 
             if pareto:
-                maxX, maxY, maxZ = tuple(max([sol.solution[dim] for sol in self.optimizer.pareto_solutions])
-                                         for dim in Solution.optimDirections.keys())
-                values = tuple([sol.solution[dim] for sol in self.optimizer.pareto_solutions]
-                               for dim in Solution.optimDirections.keys())
+                maxX, maxY, maxZ = tuple(
+                    max([sol.solution[dim] for sol in self.optimizer.pareto_solutions])
+                    for dim in Solution.optimDirections.keys()
+                )
+                values = tuple(
+                    [sol.solution[dim] for sol in self.optimizer.pareto_solutions]
+                    for dim in Solution.optimDirections.keys()
+                )
                 ax.scatter(*values)
-                plt.title(f'{self.optimizer} - Pareto optimums: {len(values[0])} values\nIteration n°{t}', fontsize=12)
+                plt.title(f"{self.optimizer} - Pareto optimums: {len(values[0])} values\nIteration n°{t}", fontsize=12)
             else:
-                ax.scatter(*tuple([sol.solution[dim] for sol in self.optimizer.solutions]
-                                  for dim in Solution.optimDirections.keys()))
-                plt.title(f'{self.optimizer} - All solutions\nIteration n°{t}', fontsize=12)
+                ax.scatter(
+                    *tuple(
+                        [sol.solution[dim] for sol in self.optimizer.solutions]
+                        for dim in Solution.optimDirections.keys()
+                    )
+                )
+                plt.title(f"{self.optimizer} - All solutions\nIteration n°{t}", fontsize=12)
 
             ax.set_xlim3d(0, maxX)
             ax.set_ylim3d(0, maxY)
@@ -51,7 +61,7 @@ class MOO:
             ax.set_zlabel("Pollution (gCO2)")
 
             imgBuf = io.BytesIO()
-            plt.savefig(imgBuf, transparent=False, facecolor='white')
+            plt.savefig(imgBuf, transparent=False, facecolor="white")
             im = Image.open(imgBuf)
             im = numpy.array(im)
             imgBuf.close()
@@ -72,11 +82,12 @@ class MOO:
 
         # optimization
         print(f"Optimizing with {self.optimizer}...")
-        maxX, maxY, maxZ = tuple(max([sol.solution[dim] for sol in self.optimizer.solutions])
-                                 for dim in Solution.optimDirections.keys())
+        maxX, maxY, maxZ = tuple(
+            max([sol.solution[dim] for sol in self.optimizer.solutions]) for dim in Solution.optimDirections.keys()
+        )
         frames = []
         pareto_frames = []
-        for n in tqdm(range(1, nIterations+1)):
+        for n in tqdm(range(1, nIterations + 1)):
             frames.append(_create_frame(n, False, maxX, maxY, maxZ))
             pareto_frames.append(_create_frame(n, True, maxX, maxY, maxZ))
             self.optimizer.optimize(**kwargs)
@@ -106,14 +117,20 @@ class MOO:
         undominatedValues = X[0].copy()
         for x in X[0]:
             for y in Y[0]:
-                if all([y.solution[dim] < x.solution[dim] if optimDir == 'min' else y.solution[dim] > x.solution[dim]
-                        for dim, optimDir in optimDirections.items()]):
+                if all(
+                    [
+                        y.solution[dim] < x.solution[dim] if optimDir == "min" else y.solution[dim] > x.solution[dim]
+                        for dim, optimDir in optimDirections.items()
+                    ]
+                ):
                     while x in undominatedValues:
                         undominatedValues.remove(x)
                     break
 
         if verbose:
-            print(f"Relative efficiency: {round(len(undominatedValues) / len(X[0]) * 100)} % of {X[1]} solutions are\
-                  undominated by {Y[1]} solutions")
+            print(
+                f"Relative efficiency: {round(len(undominatedValues) / len(X[0]) * 100)} % of {X[1]} solutions are\
+                  undominated by {Y[1]} solutions"
+            )
 
         return len(undominatedValues) / len(X[0])

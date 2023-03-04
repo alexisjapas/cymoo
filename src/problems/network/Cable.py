@@ -1,5 +1,7 @@
 class Cable:
     pass
+
+
 from .Unit import Unit
 
 
@@ -7,6 +9,7 @@ class Cable:
     """
     TODO DOCSTRING
     """
+
     def __init__(self, frm: Unit, to: Unit, **kwargs) -> None:
         self.frm = frm
         self.to = to
@@ -24,13 +27,13 @@ class Cable:
             raise ValueError("The unit is not part of this cable")
 
     def to_Neo4j(self):
-        dictionary = {key: value for key, value in self.__dict__.items() if key != 'frm' and key != 'to'}
-        expression = f'(id{self.frm.id})-[:CABLE {dictionary}]->(id{self.to.id})'
-        return expression.replace('\'', '')
+        dictionary = {key: value for key, value in self.__dict__.items() if key != "frm" and key != "to"}
+        expression = f"(id{self.frm.id})-[:CABLE {dictionary}]->(id{self.to.id})"
+        return expression.replace("'", "")
 
     def __str__(self) -> str:
-        expression = f'Cable: ({self.frm.id})-({self.to.id}), '
+        expression = f"Cable: ({self.frm.id})-({self.to.id}), "
         for key, value in self.__dict__.items():
-            if key != 'frm' and key != 'to':
-                expression += f'{key}: {value}, '
+            if key != "frm" and key != "to":
+                expression += f"{key}: {value}, "
         return expression
