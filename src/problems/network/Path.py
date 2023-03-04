@@ -8,7 +8,12 @@ class Path(Solution):
     """
     TODO DOCSTRING
     """
-    def __init__(self, _id: int = None, units: list[Unit] = [], cables: list[Cable] = [], task: Task = None) -> None:
+    def __init__(self, _id: int = None, units: list[Unit] = None, cables: list[Cable] = None,
+                 task: Task = None) -> None:
+        if units is None:
+            units = []
+        if cables is None:
+            cables = []
         super().__init__(_id, {"units": units, "cables": cables})
         if task is not None:
             self.compute_solution(task)

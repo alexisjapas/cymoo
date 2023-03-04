@@ -12,7 +12,8 @@ class Network(Problem):
     """
     TODO DOCSTRING
     """
-    def __init__(self, startTag, task, optimDirections: dict, minDepth: int, maxDepth: int, mutationRate: float, layers: list[dict]) -> None:
+    def __init__(self, startTag, task, optimDirections: dict, minDepth: int, maxDepth: int,
+                 mutationRate: float, layers: list[dict]) -> None:
         super().__init__(optimDirections)
         self.units = []
         self.cables = []
@@ -26,7 +27,8 @@ class Network(Problem):
     def pre_optimize(self):
         self.generate_basic_network()
 
-    def post_optimize(self):pass
+    def post_optimize(self):
+        pass
 
     def generate_parameters(self, expression, *parameters):
         if callable(expression):
@@ -65,14 +67,16 @@ class Network(Problem):
                 _generate_next_layer(newUnit, parameters[1:], units, cables)
 
         # Check validity of parameters
-        assert isinstance(self.layers, list) and all([isinstance(param, dict) for param in self.layers]), "self.layers must be a list of dict"
+        assert isinstance(self.layers, list) and all([isinstance(param, dict) for param in self.layers]),\
+            "self.layers must be a list of dict"
 
         _generate_next_layer(None, self.layers, self.units, self.cables)
         # Link all the units with the same startTag
         startingUnits = [unit for unit in self.units if unit.tag == self.startTag]
         # Create Couple of units
         # Create cables between them
-        for couple in [(startingUnits[i], startingUnits[j]) for i in range(len(startingUnits)) for j in range(i+1, len(startingUnits))]:
+        for couple in [(startingUnits[i], startingUnits[j]) for i in range(len(startingUnits))
+                       for j in range(i+1, len(startingUnits))]:
             params = _generate_params(self.layers[0]['cable'], couple[0], couple[1])
             newCable = Cable(couple[0], couple[1], **params)
             self.cables.append(newCable)
@@ -81,7 +85,8 @@ class Network(Problem):
     def populate(self, nSolution: int, nodeWeights=None) -> list[Path]:
         solutions = []
         for _ in range(nSolution):
-            solutions.append(self.generate_path(random.randint(self.minDepth, self.maxDepth), task=self.task, nodeWeights=nodeWeights))
+            solutions.append(self.generate_path(random.randint(self.minDepth, self.maxDepth),
+                                                task=self.task, nodeWeights=nodeWeights))
         return solutions
 
     def crossover(self, path1: Path, path2: Path) -> Path:
@@ -89,8 +94,10 @@ class Network(Problem):
         childPath = None
         if sharedUnits:
             chosenOne = random.choice(sharedUnits)
-            childPathUnits = path1.parameters["units"][:path1.parameters["units"].index(chosenOne)+1] + path2.parameters["units"][path2.parameters["units"].index(chosenOne)+1:]
-            childPathCables = path1.parameters["cables"][:path1.parameters["units"].index(chosenOne)] + path2.parameters["cables"][path2.parameters["units"].index(chosenOne):]
+            childPathUnits = path1.parameters["units"][:path1.parameters["units"].index(chosenOne)+1]\
+                + path2.parameters["units"][path2.parameters["units"].index(chosenOne)+1:]
+            childPathCables = path1.parameters["cables"][:path1.parameters["units"].index(chosenOne)]\
+                + path2.parameters["cables"][path2.parameters["units"].index(chosenOne):]
             childPath = Path(units=childPathUnits, cables=childPathCables, task=self.task)
         return childPath
 
@@ -103,7 +110,7 @@ class Network(Problem):
             mutPath = Path(_id=path._id, units=mutPathUnits, cables=mutPathCables, task=self.task)
         return mutPath
 
-    def generate_path(self, maxDepth: int, task: Task=None, nodeWeights=None) -> Path:
+    def generate_path(self, maxDepth: int, task: Task = None, nodeWeights=None) -> Path:
         starting = random.choice([unit for unit in self.units if unit.tag == self.startTag])
 
         def _recursive_generate_path(unit: Unit, depth: int, path: Path, nodeWeights=None) -> Path:
