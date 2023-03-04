@@ -22,7 +22,7 @@ class MOO:
     def __init__(self, problem):
         self.problem = problem
 
-    def optimize(self, optimizer, nSolutions, nIterations, save_dir="imgs", seed=None, **kwargs):
+    def optimize(self, optimizer, nSolutions, nIterations, saveDir=None, seed=None, **kwargs):
         """
         Loop to uses the chosen optimizer to optimize solutions. At each iteration, create a matplotlib scatterplot.
         Uses plots at the end to generate a GIF.
@@ -97,13 +97,14 @@ class MOO:
         self.optimizer.post_optimize()
 
         # Create GIF with frames of each iteration
-        imageio.mimsave(f"{save_dir}/{self.optimizer}.gif", frames, fps=1)
-        imageio.mimsave(f"{save_dir}/{self.optimizer}_pareto.gif", pareto_frames, fps=1)
+        if saveDir is not None:
+            imageio.mimsave(f"{saveDir}/{self.optimizer}.gif", frames, fps=1)
+            imageio.mimsave(f"{saveDir}/{self.optimizer}_pareto.gif", pareto_frames, fps=1)
 
         # Display final solutions and count
         print("Displaying pareto solutions...")
         for sol in self.optimizer.pareto_solutions:
-            print(sol._id)
+            print(sol.solution)
             sleep(0.2)
         print()
 
@@ -114,23 +115,29 @@ class MOO:
         """
         Computes the number of solutions of X undominated by Y solutions. Verbose function enable to print results.
         """
-        undominatedValues = X[0].copy()
-        for x in X[0]:
-            for y in Y[0]:
-                if all(
-                    [
-                        y.solution[dim] < x.solution[dim] if optimDir == "min" else y.solution[dim] > x.solution[dim]
-                        for dim, optimDir in optimDirections.items()
-                    ]
-                ):
-                    while x in undominatedValues:
-                        undominatedValues.remove(x)
-                    break
+        def _relative_efficiency(X, Y, optimDirections):
+            undominatedValues = X[0].copy()
+            for x in X[0]:
+                for y in Y[0]:
+                    if all(
+                        [
+                            y.solution[dim] < x.solution[dim] if optimDir == "min" else y.solution[dim] > x.solution[dim]
+                            for dim, optimDir in optimDirections.items()
+                        ]
+                    ):
+                        while x in undominatedValues:
+                            undominatedValues.remove(x)
+                        break
+            return undominatedValues
+
+        undominatedX = _relative_efficiency(X, Y, optimDirections)
+        scoreX = round(len(undominatedX) / len(X[0]))
+
+        undominatedY = _relative_efficiency(Y, X, optimDirections)
+        scoreY = round(len(undominatedY) / len(Y[0]))
 
         if verbose:
-            print(
-                f"Relative efficiency: {round(len(undominatedValues) / len(X[0]) * 100)} % of {X[1]} solutions are\
-                  undominated by {Y[1]} solutions"
-            )
+            print(f"Relative efficiency: {scoreX * 100} % of {X[1]} solutions are undominated by {Y[1]} solutions")
+            print(f"Relative efficiency: {scoreY * 100} % of {Y[1]} solutions are undominated by {X[1]} solutions")
 
-        return len(undominatedValues) / len(X[0])
+        return scoreX, scoreY
