@@ -9,8 +9,7 @@ Only [UNIX](https://en.wikipedia.org/wiki/Unix) systems are officially supported
 
 ### Requirements
 ```bash
-git
-python
+git python
 ```
 
 ### Installation
