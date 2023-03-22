@@ -44,7 +44,8 @@ class NSRA(NSA):
 
     def selection(self, ratioKept):
         """
-        Drop worst solutions according to their ranks (lower is better), if equal in rank, uses crowding distance (higher is better).
+        Drop worst solutions according to their ranks (lower is better),
+        if equal in rank, uses crowding distance (higher is better).
         """
         self.solutions.sort(key=lambda sol: (sol.rank, -sol.crowdingDistance))
         self.solutions = self.solutions[: round(ratioKept * self.nSolutions)]
