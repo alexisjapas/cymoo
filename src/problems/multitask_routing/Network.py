@@ -1,11 +1,10 @@
 import uuid
 import random
 
-from problems.Problem import Problem
+from ...problems.Problem import Problem
 from .Unit import Unit
 from .Cable import Cable
 from .Paths import Paths
-from .Task import Task
 
 
 class Network(Problem):
@@ -117,11 +116,11 @@ class Network(Problem):
             chosenOne = random.choice(chosenList)
             childPathUnits = (
                 paths1.parameters[index]["units"][: paths1.parameters[index]["units"].index(chosenOne) + 1]
-                + paths2.parameters[index]["units"][paths2.parameters[index]["units"].index(chosenOne) + 1 :]
+                + paths2.parameters[index]["units"][paths2.parameters[index]["units"].index(chosenOne) + 1:]
             )
             childPathCables = (
                 paths1.parameters[index]["cables"][: paths1.parameters[index]["units"].index(chosenOne)]
-                + paths2.parameters[index]["cables"][paths2.parameters[index]["units"].index(chosenOne) :]
+                + paths2.parameters[index]["cables"][paths2.parameters[index]["units"].index(chosenOne):]
             )
             # create a tuple called parameters with the same structure as paths1.parameters and paths2.parameters
             # where each element is chosen randomly in paths1.parameters or paths2.parameters

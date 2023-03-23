@@ -18,3 +18,13 @@ class Optimizer(ABC):
     @abstractmethod
     def post_optimize(self):
         pass
+
+
+class OptimizerProblemMixin(ABC):
+    @abstractmethod
+    def populate(self):
+        pass
+
+
+class OptimizerSolutionMixin(ABC):
+    pass

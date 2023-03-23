@@ -8,7 +8,7 @@ from tqdm import tqdm
 from time import sleep
 from matplotlib import pyplot as plt
 
-from problems.Solution import Solution
+from .problems.Solution import Solution
 
 
 load_dotenv()
