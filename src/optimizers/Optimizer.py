@@ -21,7 +21,9 @@ class Optimizer(ABC):
 
 
 class OptimizerProblemMixin(ABC):
-    pass
+    @abstractmethod
+    def populate(self):
+        pass
 
 
 class OptimizerSolutionMixin(ABC):

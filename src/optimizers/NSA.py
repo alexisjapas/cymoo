@@ -1,7 +1,7 @@
 from abc import ABC
 
 from ..problems.Solution import Solution
-from .Optimizer import Optimizer
+from .Optimizer import Optimizer, OptimizerProblemMixin, OptimizerSolutionMixin
 
 
 class NSA(Optimizer, ABC):
@@ -64,3 +64,11 @@ class NSA(Optimizer, ABC):
         for sol in pareto_solutions:
             if sol.parameters not in [s.parameters for s in self.pareto_solutions]:
                 self.pareto_solutions.append(sol)
+
+
+class NSAProblemMixin(OptimizerProblemMixin, ABC):
+    pass
+
+
+class NSASolutionMixin(OptimizerSolutionMixin, ABC):
+    pass

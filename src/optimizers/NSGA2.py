@@ -1,7 +1,8 @@
+from abc import ABC, abstractmethod
 from random import choices
 
 from ..problems.Solution import Solution
-from .NSA import NSA
+from .NSA import NSA, NSAProblemMixin, NSASolutionMixin
 
 
 class NSGA2(NSA):
@@ -86,3 +87,17 @@ class NSGA2(NSA):
 
     def __str__(self):
         return "NSGA2"
+
+
+class NSGA2ProblemMixin(NSAProblemMixin, ABC):
+    @abstractmethod
+    def crossover(self):
+        pass
+
+    @abstractmethod
+    def mutate(self):
+        pass
+
+
+class NSGA2SolutionMixin(NSASolutionMixin, ABC):
+    pass

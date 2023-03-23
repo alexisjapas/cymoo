@@ -20,16 +20,20 @@ cd cymoo
 make
 ```
 
+## Usage
 Activate environment
 ```bash
 source venv/bin/activate
 ```
 
-## Usage
+Run tests
+```bash
+pytest tests/
+```
+
 Run an optimization example
 ```bash
-source venv/bin/activate
-python src/main.py
+python -m src.main
 ```
 
 ## Project structure
