@@ -30,6 +30,22 @@ class Network(Problem):
     def post_optimize(self):
         pass
 
+    def add_final_node(self):
+        finalUnit = Unit('0', 'FINAL')
+        self.units.append(finalUnit)
+        for unit in self.units:
+            self.cables.append(Cable(unit, finalUnit))
+    
+    def remove_final_node(self):
+        finalUnit = [unit for unit in self.units if unit.tag == 'FINAL'][0]
+        self.units.remove(finalUnit)
+        for cable in self.cables:
+            if cable.end == finalUnit:
+                self.cables.remove(cable)
+            if cable.start == finalUnit:
+                self.cables.remove(cable)
+
+
     def generate_parameters(self, expression, *parameters):
         if callable(expression):
             if expression.__code__.co_argcount == 0:
