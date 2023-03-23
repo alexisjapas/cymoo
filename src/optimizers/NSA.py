@@ -1,6 +1,6 @@
 from abc import ABC
 
-from problems.Solution import Solution
+from ..problems.Solution import Solution
 from .Optimizer import Optimizer
 
 
