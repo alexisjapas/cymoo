@@ -1,13 +1,13 @@
 import random
 from math import sqrt
 
-from MOO import MOO
-from optimizers.NSGA2 import NSGA2
-from optimizers.NSRA import NSRA
-from problems.multitask_routing.Task import Task
-from problems.multitask_routing.Network import Network
+from .MOO import MOO
+from .optimizers.NSGA2 import NSGA2
+from .optimizers.NSRA import NSRA
+from .problems.multitask_routing.Task import Task
+from .problems.multitask_routing.Network import Network
+from .problems.Solution import Solution
 
-from problems.Solution import Solution
 
 # PROBLEM DEFINITION
 paramsLayerOne = {

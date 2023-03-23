@@ -1,6 +1,4 @@
-from random import choices
-
-from problems.Solution import Solution
+from ..problems.Solution import Solution
 from .NSA import NSA
 
 
