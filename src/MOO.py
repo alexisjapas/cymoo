@@ -87,6 +87,7 @@ class MOO:
         )
         frames = []
         pareto_frames = []
+        self.optimizer.pre_optimize()
         for n in tqdm(range(1, nIterations + 1)):
             frames.append(_create_frame(n, False, maxX, maxY, maxZ))
             pareto_frames.append(_create_frame(n, True, maxX, maxY, maxZ))
