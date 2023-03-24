@@ -4,10 +4,15 @@
     <img src="imgs/NSWGE.gif" alt="Animated example of optimization convergence"/>
 </p>
 
-## Installation
+## Development version
 Only [UNIX](https://en.wikipedia.org/wiki/Unix) systems are officially supported.
 
-### Development version
+### Requirements
+```bash
+git python
+```
+
+### Installation
 Complete setup of the project
 ```bash
 # clone source files
