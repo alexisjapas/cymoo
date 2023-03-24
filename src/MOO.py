@@ -52,7 +52,17 @@ class MOO:
                 {optimizer_class.__name__} optimizer."
             )
 
-    def optimize(self, optimizer, nSolutions, nIterations, saveDir=None, seed=None, **kwargs):
+    def optimize(
+            self,
+            optimizer,
+            nSolutions: int,
+            nIterations: int,
+            imDir: str = None,
+            saveDir: str = None,
+            seed: int = None,
+            export: bool = False,
+            **kwargs,
+        ):
         """
         Loop to uses the chosen optimizer to optimize solutions. At each iteration, create a matplotlib scatterplot.
         Uses plots at the end to generate a GIF.
@@ -72,11 +82,6 @@ class MOO:
                 ax.scatter(*tuple(values.values()))
                 plt.title(
                     f"{self.optimizer} - Pareto optimums: {len(list(values.values())[0])} values\nIteration n°{t}",
-                    fontsize=12,
-                )
-                ax.scatter(*values)
-                plt.title(
-                    f"{self.optimizer} - Pareto optimums: {len(values[0])} values\nIteration n°{t}",
                     fontsize=12,
                 )
             else:
