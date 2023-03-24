@@ -18,3 +18,4 @@ pandas==1.5.3
 plotly==5.13.1
 imageio==2.25.0
 nbformat>=4.2.0
+ujson==5.7.0
