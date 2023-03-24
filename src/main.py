@@ -4,6 +4,7 @@ from math import sqrt
 from .MOO import MOO
 from .optimizers.NSGA2 import NSGA2
 from .optimizers.NSRA import NSRA
+from .optimizers.NSWGE import NSWGE
 from .problems.multitask_routing.Task import Task
 from .problems.multitask_routing.Network import Network
 from .problems.Solution import Solution
@@ -25,7 +26,7 @@ paramsLayerOne = {
         "propagationSpeed": lambda: 1,
         "flowRate": lambda: 1,
     },
-    "numberNewUnits": 10,
+    "numberNewUnits": 2,
 }
 
 paramsLayerTwo = {
@@ -43,7 +44,7 @@ paramsLayerTwo = {
         "propagationSpeed": lambda: 2,
         "flowRate": lambda: 3,
     },
-    "numberNewUnits": 20,
+    "numberNewUnits": 2,
 }
 
 paramsLayerThree = {
@@ -61,7 +62,7 @@ paramsLayerThree = {
         "propagationSpeed": lambda: 2,
         "flowRate": lambda: 3,
     },
-    "numberNewUnits": 10,
+    "numberNewUnits": 2,
 }
 
 tasks = tuple(Task(random.randint(1, 1000), random.randint(1, 1000)) for _ in range(3))
@@ -73,20 +74,25 @@ problem = Network(
     minDepth=10,
     maxDepth=20,
     mutationRate=0.1,
-    layers=[paramsLayerOne, paramsLayerTwo, paramsLayerTwo, paramsLayerThree],
+    layers=[paramsLayerOne, paramsLayerTwo, paramsLayerThree],
 )
 
 # OPTIMIZATION
-nIterations = 10
-nSolutions = 1000
+nIterations = 100
+nSolutions =1500
 seed = 10
 
 moo = MOO(problem)
 
-nsga2_paretos = moo.optimize(NSGA2, nSolutions, nIterations, seed=seed, ratioKept=0.5)
-nsra_paretos = moo.optimize(NSRA, nSolutions, nIterations, seed=seed, ratioKept=0.5)
+nsga2_paretos = moo.optimize(NSGA2, nSolutions, nIterations, seed=seed, ratioKept=0.5, saveDir="imgs")
+nswge_paretos = moo.optimize(NSWGE, nSolutions, nIterations, seed=seed, saveDir="imgs")
+nsra_paretos = moo.optimize(NSRA, nSolutions, nIterations, seed=seed, ratioKept=0.5, saveDir="imgs")
 
 # nswge_paretos = moo.optimize(NSWGE, nSolutions, nIterations, seed=seed)
 
 # DISPLAYING RESULTS
 MOO.relative_efficiency(nsra_paretos, nsga2_paretos, Solution.optimDirections, verbose=True)
+MOO.relative_efficiency(nsra_paretos, nswge_paretos, Solution.optimDirections, verbose=True)
+MOO.relative_efficiency(nsga2_paretos, nswge_paretos, Solution.optimDirections, verbose=True)
+
+

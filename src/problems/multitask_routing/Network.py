@@ -102,12 +102,19 @@ class Network(Problem, NSGA2ProblemMixin, NSRAProblemMixin, NSWGEProblemMixin):
 
     def populate(self, nSolution: int, nodeWeights=None) -> list[Paths]:
         solutions = []
-        for _ in range(nSolution):
-            parameters = tuple(
-                self.generate_path(random.randint(self.minDepth, self.maxDepth), nodeWeights=nodeWeights)
-                for _ in range(len(self.tasks))
-            )
-            solutions.append(Paths(parameters=parameters, tasks=self.tasks))
+        if nodeWeights:
+            for _ in range(nSolution):
+                parameters = tuple(
+                    self.generate_path(random.randint(self.minDepth, self.maxDepth), nodeWeights=nodeWeights[i])
+                    for i in range(len(self.tasks))
+                )
+                solutions.append(Paths(parameters=parameters, tasks=self.tasks))
+        else:
+            for _ in range(nSolution):
+                parameters = tuple(
+                    self.generate_path(random.randint(self.minDepth, self.maxDepth)) for _ in range(len(self.tasks))
+                )
+                solutions.append(Paths(parameters=parameters, tasks=self.tasks))
         return solutions
 
     def crossover(self, paths1: Paths, paths2: Paths) -> Paths:
@@ -154,6 +161,17 @@ class Network(Problem, NSGA2ProblemMixin, NSRAProblemMixin, NSWGEProblemMixin):
             paths.parameters[index]["cables"].append(cable)
             paths.parameters[index]["units"].append(cable.get_other_unit(last_unit))
         return paths
+    
+    def add_final_node(self):
+        unit = Unit("0", 'FINAL')
+        self.units.append(unit)
+        for u in self.units:
+            cable = Cable(u, unit)
+
+    def remove_final_node(self):
+        for u in self.units:
+            if u.tag == 'FINAL':
+                self.units.remove(u)
 
     def generate_path(self, maxDepth: int, nodeWeights=None) -> dict:
         starting = random.choice([unit for unit in self.units if unit.tag == self.startTag])
@@ -174,6 +192,9 @@ class Network(Problem, NSGA2ProblemMixin, NSRAProblemMixin, NSWGEProblemMixin):
             return _recursive_generate_path(cable.get_other_unit(unit), depth + 1, path, nodeWeights)
 
         generatedPath = _recursive_generate_path(starting, 0, {"units": [], "cables": []}, nodeWeights)
+        while generatedPath["units"][-1].tag == 'FINAL':
+            generatedPath["units"].pop()
+            generatedPath["cables"].pop()
         return generatedPath
 
     def to_Neo4j(self):
