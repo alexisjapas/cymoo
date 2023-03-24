@@ -18,3 +18,7 @@ class Problem(ABC):
     @abstractmethod
     def populate(self):
         pass
+
+    @abstractmethod
+    def get_solution_class(self):
+        pass

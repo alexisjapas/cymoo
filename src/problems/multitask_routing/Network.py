@@ -5,9 +5,12 @@ from ...problems.Problem import Problem
 from .Unit import Unit
 from .Cable import Cable
 from .Paths import Paths
+from ...optimizers.NSGA2 import NSGA2ProblemMixin
+from ...optimizers.NSRA import NSRAProblemMixin
+from ...optimizers.NSWGE import NSWGEProblemMixin
 
 
-class Network(Problem):
+class Network(Problem, NSGA2ProblemMixin, NSRAProblemMixin, NSWGEProblemMixin):
     """
     TODO DOCSTRING
     """
@@ -37,6 +40,9 @@ class Network(Problem):
 
     def post_optimize(self):
         pass
+
+    def get_solution_class(self):
+        return Paths
 
     def generate_parameters(self, expression, *parameters):
         if callable(expression):
@@ -116,11 +122,11 @@ class Network(Problem):
             chosenOne = random.choice(chosenList)
             childPathUnits = (
                 paths1.parameters[index]["units"][: paths1.parameters[index]["units"].index(chosenOne) + 1]
-                + paths2.parameters[index]["units"][paths2.parameters[index]["units"].index(chosenOne) + 1:]
+                + paths2.parameters[index]["units"][paths2.parameters[index]["units"].index(chosenOne) + 1 :]
             )
             childPathCables = (
                 paths1.parameters[index]["cables"][: paths1.parameters[index]["units"].index(chosenOne)]
-                + paths2.parameters[index]["cables"][paths2.parameters[index]["units"].index(chosenOne):]
+                + paths2.parameters[index]["cables"][paths2.parameters[index]["units"].index(chosenOne) :]
             )
             # create a tuple called parameters with the same structure as paths1.parameters and paths2.parameters
             # where each element is chosen randomly in paths1.parameters or paths2.parameters

@@ -112,11 +112,11 @@ class Network(Problem):
             chosenOne = random.choice(sharedUnits)
             childPathUnits = (
                 path1.parameters["units"][: path1.parameters["units"].index(chosenOne) + 1]
-                + path2.parameters["units"][path2.parameters["units"].index(chosenOne) + 1:]
+                + path2.parameters["units"][path2.parameters["units"].index(chosenOne) + 1 :]
             )
             childPathCables = (
                 path1.parameters["cables"][: path1.parameters["units"].index(chosenOne)]
-                + path2.parameters["cables"][path2.parameters["units"].index(chosenOne):]
+                + path2.parameters["cables"][path2.parameters["units"].index(chosenOne) :]
             )
             childPath = Path(units=childPathUnits, cables=childPathCables, task=self.task)
         return childPath
