@@ -1,5 +1,6 @@
 from random import choices
 
+from math import ceil
 from problems.Solution import Solution
 from .NSA import NSA
 
@@ -34,6 +35,41 @@ class NSGA2(NSA):
         self.normalize_weights()
         self.remove_final_node()
         self.ranking()
+
+    def normalize_weights(self):
+        for i in range(len(self.problem.task)):
+            sumWeights = sum(self.weights[i].values())
+            for j in self.weights[i].keys():
+                if sumWeights != 0:
+                    self.weights[i][j] /= sumWeights
+                else:
+                    self.weights[i][j] = 1/len(self.weights[i].keys())
+
+    def update_weights(self, ratio, maximum):
+        assert ratio <= .5, "Ratio can't be above .5"
+        rankDistribution = list(range(1, self.maxRank+1))
+        evalPoint = min(maximum, ceil(len(rankDistribution)*ratio))
+        values = [0 for _ in rankDistribution]
+        for i in range(1, evalPoint+1):
+            values[-i] = -(evalPoint-(i-1))
+            values[i-1] = evalPoint-(i-1)
+        dicUpdate = dict(zip(rankDistribution, values))
+        for weight in self.weights:
+            for i in weight.keys():
+                for j in weight[i].keys():
+                    weight[i][j] = (weight[i][j], [])
+            for i in self.solutions:
+                rank = i.rank
+                path = i.parameters[0]
+                for j in path[:-1]:
+                    weight[j.id][path[path.index(j)+1].id][1].append(dicUpdate[rank])
+                weight[path[-1].id]['0'][1].append(dicUpdate[rank])
+
+            def _mean(iterable):
+                return sum(iterable)/len(iterable)
+            for key1 in weight.keys():
+                for key2 in weight[key1].keys():
+                    weight[key1][key2] = round(_mean(weight[key1][key2][1]), 3) + weight[key1][key2][0]
 
     def add_final_node(self):
         self.problem.add_final_node()
