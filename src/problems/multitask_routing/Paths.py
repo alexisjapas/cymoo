@@ -1,8 +1,11 @@
 from ...problems.Solution import Solution
 from .Task import Task
+from ...optimizers.NSGA2 import NSGA2SolutionMixin
+from ...optimizers.NSRA import NSRASolutionMixin
+from ...optimizers.NSWGE import NSWGESolutionMixin
 
 
-class Paths(Solution):
+class Paths(Solution, NSGA2SolutionMixin, NSRASolutionMixin, NSWGESolutionMixin):
     """
     TODO DOCSTRING
     """

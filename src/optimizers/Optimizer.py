@@ -21,7 +21,7 @@ class Optimizer(ABC):
 
 
 class OptimizerProblemMixin(ABC):
-    @abstractmethod
+    @abstractmethod  # TODO: is it redundant with Problem definition?
     def populate(self):
         pass
 

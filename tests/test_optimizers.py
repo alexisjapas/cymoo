@@ -4,15 +4,13 @@ import sys
 import pytest
 
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 
 def get_optimizer_modules():
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    optimizers_dir = os.path.join(base_dir, 'src', 'optimizers')
-    optimizer_files = [
-        f[:-3] for f in os.listdir(optimizers_dir) if f.endswith(".py") and not f.startswith("__")
-    ]
+    optimizers_dir = os.path.join(base_dir, "src", "optimizers")
+    optimizer_files = [f[:-3] for f in os.listdir(optimizers_dir) if f.endswith(".py") and not f.startswith("__")]
     return optimizer_files
 
 
