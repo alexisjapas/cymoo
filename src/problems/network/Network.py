@@ -1,7 +1,7 @@
 import uuid
 import random
 
-from problems.Problem import Problem
+from ...problems.Problem import Problem
 from .Unit import Unit
 from .Cable import Cable
 from .Path import Path

@@ -1,7 +1,7 @@
-from random import choices
+from abc import ABC
 
-from problems.Solution import Solution
-from .NSA import NSA
+from ..problems.Solution import Solution
+from .NSA import NSA, NSAProblemMixin, NSASolutionMixin
 
 
 class NSRA(NSA):
@@ -52,3 +52,11 @@ class NSRA(NSA):
 
     def __str__(self):
         return "NSRA"
+
+
+class NSRAProblemMixin(NSAProblemMixin, ABC):
+    pass
+
+
+class NSRASolutionMixin(NSASolutionMixin, ABC):
+    pass

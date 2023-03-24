@@ -1,3 +1,4 @@
+import inspect
 import io
 import random
 from time import sleep
@@ -10,7 +11,9 @@ from matplotlib import pyplot as plt
 from PIL import Image
 from tqdm import tqdm
 
-from problems.Solution import Solution
+from .optimizers.Optimizer import OptimizerProblemMixin, OptimizerSolutionMixin
+from .problems.Solution import Solution
+
 
 load_dotenv()
 
@@ -23,22 +26,41 @@ class MOO:
     def __init__(self, problem):
         self.problem = problem
 
-    def optimize(
-        self,
-        optimizer,
-        nSolutions: int,
-        nIterations: int,
-        imDir: str = None,
-        saveDir: str = None,
-        seed: int = None,
-        export: bool = False,
-        **kwargs,
-    ):
+    def check_required_mixins(self, optimizer_class, problem_instance, solution_instance):
+        problem_mixin = None
+        solution_mixin = None
+
+        module = inspect.getmodule(optimizer_class)
+        for name, cls in inspect.getmembers(module, inspect.isclass):
+            if issubclass(cls, OptimizerProblemMixin):
+                problem_mixin = cls
+            elif issubclass(cls, OptimizerSolutionMixin):
+                solution_mixin = cls
+
+        if problem_mixin is None or solution_mixin is None:
+            raise ValueError(f"Unable to find mixin classes for {optimizer_class.__name__} optimizer.")
+
+        if not isinstance(problem_instance, problem_mixin):
+            raise TypeError(
+                f"The problem instance must implement the {problem_mixin.__name__} mixin for \
+                {optimizer_class.__name__} optimizer."
+            )
+
+        if not issubclass(solution_instance, solution_mixin):
+            raise TypeError(
+                f"The solution instance must implement the {solution_mixin.__name__} mixin for \
+                {optimizer_class.__name__} optimizer."
+            )
+
+    def optimize(self, optimizer, nSolutions, nIterations, saveDir=None, seed=None, **kwargs):
         """
         Loop to uses the chosen optimizer to optimize solutions. At each iteration, create a matplotlib scatterplot.
         Uses plots at the end to generate a GIF.
         A seed can be used for reproductivity.
         """
+
+        # check that the problem and its solution implements correct mixins
+        self.check_required_mixins(optimizer, self.problem, self.problem.get_solution_class())
 
         def _create_frame(t, pareto: bool, maxX, maxY, maxZ):
             fig = plt.figure()
@@ -50,6 +72,11 @@ class MOO:
                 ax.scatter(*tuple(values.values()))
                 plt.title(
                     f"{self.optimizer} - Pareto optimums: {len(list(values.values())[0])} values\nIteration n°{t}",
+                    fontsize=12,
+                )
+                ax.scatter(*values)
+                plt.title(
+                    f"{self.optimizer} - Pareto optimums: {len(values[0])} values\nIteration n°{t}",
                     fontsize=12,
                 )
             else:
@@ -112,6 +139,7 @@ class MOO:
         )
         frames = []
         pareto_frames = []
+        self.optimizer.pre_optimize()
         export_solutions = {}
         for n in tqdm(range(1, nIterations + 1)):
             frames.append(_create_frame(n, False, maxX, maxY, maxZ))
@@ -150,6 +178,7 @@ class MOO:
         Computes the number of solutions of X undominated by Y solutions. Verbose function enable to print results.
         """
 
+
         def _relative_efficiency(X, Y, optimDirections):
             undominatedValues = X[0].copy()
             for x in X[0]:
@@ -157,7 +186,9 @@ class MOO:
                     if all(
                         [
                             y.solution[dim] < x.solution[dim]
+
                             if optimDir == "min"
+
                             else y.solution[dim] > x.solution[dim]
                             for dim, optimDir in optimDirections.items()
                         ]

@@ -1,113 +1,132 @@
-from math import ceil
+from random import choices
+from abc import ABC, abstractmethod
 
-from .NSA import NSA
-from problems.network.Network import Network
-from problems.network.Unit import Unit
-from problems.network.Cable import Cable
-from problems.network.Path import Path
+
+
+from math import ceil
+from .NSA import NSA, NSAProblemMixin, NSASolutionMixin
 
 
 class NSWGE(NSA):
     """
-    TODO docstring
+    TODO DOCSTRING
     """
-
-    def __init__(self, problem: Network, nSolutions) -> None:
+    def __init__(self, problem, nSolutions) -> None:
         super().__init__(problem, nSolutions)
+
+    def pre_optimize(self):
         self.add_final_node()
         self.init_weights()
 
-    def pre_optimize(self):
-        pass
-
     def optimize(self):
         self.solutions.clear()
-        for _ in range(self.nSolutions):
-            path = self.problem.generate_path(self.problem.maxDepth, self.weights)
-            self.remove_finals(path)
-            path.compute_solution(self.problem.task)
-            self.solutions.append(path)
-
+        ## CREATE N SOLUTIONS
+        self.solutions = self.problem.populate(self.nSolutions, self.weights)
         self.ranking()
-        self.update_weights(ratio=0.5, maximum=25)
-
-        return self.weights
+        ## UPDATE WEIGHTS
+        self.update_weights(ratio=.25, maximum=9)
+        #=======#
+        #  OLD  #
+        #=======#
+ 
+        # self.crowding_distance()
+        # self.selection(ratioKept)
+        # self.offspring_generation()
 
     def post_optimize(self):
         self.normalize_weights()
+        self.remove_final_node()
         self.ranking()
+        self.get_pareto()
+
+    # def normalize_weights(self):
+    #     for i in range(len(self.problem.tasks)):
+    #         sumWeights = sum(self.weights[i].values())
+    #         for j in self.weights[i].keys():
+    #             if sumWeights != 0:
+    #                 self.weights[i][j] /= sumWeights
+    #             else:
+    #                 self.weights[i][j] = 1/len(self.weights[i].keys())
 
     def normalize_weights(self):
-        for i in self.weights.keys():
-            sumWeights = sum(self.weights[i].values())
-            for j in self.weights[i].keys():
-                if sumWeights != 0:
-                    self.weights[i][j] /= sumWeights
-                else:
-                    self.weights[i][j] = 1 / len(self.weights[i].keys())
+        for i in range(len(self.problem.tasks)):
+            weights = self.weights[i]
+            for j in weights.keys():
+                sumWeights = sum(weights[j].values())
+                for k in weights[j].keys():
+                    if sumWeights != 0:
+                        weights[j][k] /= sumWeights
+                    else:
+                        weights[j][k] = 1/len(weights[j].keys())
 
     def update_weights(self, ratio, maximum):
-        assert ratio <= 0.5, "Ratio can't be above .5"
-        rankDistribution = list(range(1, self.maxRank + 1))
-        evalPoint = min(maximum, ceil(len(rankDistribution) * ratio))
+        assert ratio <= .5, "Ratio can't be above .5"
+        rankDistribution = list(range(1, self.maxRank+1))
+        evalPoint = min(maximum, ceil(len(rankDistribution)*ratio))
         values = [0 for _ in rankDistribution]
-        for i in range(1, evalPoint + 1):
-            values[-i] = -(evalPoint - (i - 1))
-            values[i - 1] = evalPoint - (i - 1)
+        for i in range(1, evalPoint+1):
+            values[-i] = -(evalPoint-(i-1))
+            values[i-1] = evalPoint-(i-1)
         dicUpdate = dict(zip(rankDistribution, values))
+        for weight in self.weights:
+            for i in weight.keys():
+                for j in weight[i].keys():
+                    weight[i][j] = (weight[i][j], [])
+            for i in self.solutions:
+                rank = i.rank
+                path = i.parameters[0]['units']
+                for j in path[:-1]:
+                    weight[j.id][path[path.index(j)+1].id][1].append(dicUpdate[rank])
+                weight[path[-1].id]['0'][1].append(dicUpdate[rank])
 
-        for i in self.weights.keys():
-            for j in self.weights[i].keys():
-                self.weights[i][j] = (self.weights[i][j], [])
-
-        for i in self.solutions:
-            rank = i.rank
-            path = i.parameters[0]
-            for j in path[:-1]:
-                self.weights[j.id][path[path.index(j) + 1].id][1].append(dicUpdate[rank])
-            self.weights[path[-1].id]["0"][1].append(dicUpdate[rank])
-
-        def _mean(iter):
-            if iter == []:
-                return 0
-            sum = 0
-            for i in iter:
-                sum += i
-            return sum / len(iter)
-
-        for key1 in self.weights.keys():
-            for key2 in self.weights[key1].keys():
-                self.weights[key1][key2] = max(
-                    0, self.weights[key1][key2][0] + round(_mean(self.weights[key1][key2][1]), 3)
-                )
-        return self.weights
+            def _mean(iterable):
+                if len(iterable) == 0:
+                    return 0
+                return sum(iterable)/len(iterable)
+            for key1 in weight.keys():
+                for key2 in weight[key1].keys():
+                    weight[key1][key2] = max(round(_mean(weight[key1][key2][1]), 3) + weight[key1][key2][0],0)
 
     def add_final_node(self):
-        problem = self.problem
-        newUnit = Unit("0", "FINAL")
-        problem.units.append(newUnit)
-        for unit in problem.units:
-            cable = Cable(unit, newUnit)
-            problem.cables.append(cable)
-        return problem
+        self.problem.add_final_node()
+
+    def remove_final_node(self):
+        self.problem.remove_final_node()
 
     def init_weights(self):
-        self.weights = {}
-        for node in self.problem.units:
-            self.weights[node.id] = {}
-            # get all linked Nodes
-            for node2 in map(lambda x: x.get_other_unit(node), node.cables):
-                if node.tag == "FINAL" and node2.tag != "FINAL":
-                    self.weights[node.id][node2.id] = 0
-                elif node2.tag == "FINAL" and node.tag != "FINAL":
-                    self.weights[node.id][node2.id] = 1
-                else:
-                    self.weights[node.id][node2.id] = 10
-        return 0
+        self.weights = []
+        for _ in range(len(self.problem.tasks)):
+            weight = {}
+            for node in self.problem.units:
+                weight[node.id] = {}
+                for node2 in map(lambda x: x.get_other_unit(node), node.cables):
+                    if node.tag == 'FINAL' and node2.tag != 'FINAL':
+                        weight[node.id][node2.id] = 0
+                    elif node2.tag == 'FINAL' and node.tag != 'FINAL':
+                        weight[node.id][node2.id] = 1
+                    else:
+                        weight[node.id][node2.id] = 10
+            self.weights.append(weight)
 
-    def remove_finals(self, path: Path):
-        path.unit = [unit for unit in path.unit if unit.tag != "FINAL"]
-        path.cable = path.cable[: len(path.unit) - 1]
+    # def create_solutions(self, nSolutions):
+    #     solutions = []
+    #     for _ in range(len(self.problem.tasks)):
+    #         solutions.append(self.problem.populate(nSolutions, self.weights[i]))
+    #     self.solutions = 
+    #     print('solutions : ', self.solutions)
+       
 
     def __str__(self):
         return "NSWGE"
+    
+class NSWGEProblemMixin(NSAProblemMixin, ABC):
+    @abstractmethod
+    def add_final_node(self):
+        pass
+
+    @abstractmethod
+    def remove_final_node(self):
+        pass
+
+class NSWGESolutionMixin(NSASolutionMixin, ABC):
+    pass
