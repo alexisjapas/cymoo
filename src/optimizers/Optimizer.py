@@ -8,10 +8,23 @@ class Optimizer(ABC):
         self.nSolutions = nSolutions
 
     @abstractmethod
-    def pre_optimize(self):pass
+    def pre_optimize(self):
+        pass
 
     @abstractmethod
-    def optimize(self):pass
+    def optimize(self):
+        pass
 
     @abstractmethod
-    def post_optimize(self):pass
+    def post_optimize(self):
+        pass
+
+
+class OptimizerProblemMixin(ABC):
+    @abstractmethod  # TODO: is it redundant with Problem definition?
+    def populate(self):
+        pass
+
+
+class OptimizerSolutionMixin(ABC):
+    pass

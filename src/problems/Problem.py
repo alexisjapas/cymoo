@@ -8,10 +8,17 @@ class Problem(ABC):
         Solution.optimDirections = optimDirections
 
     @abstractmethod
-    def pre_optimize(self):pass
+    def pre_optimize(self):
+        pass
 
     @abstractmethod
-    def post_optimize(self):pass
+    def post_optimize(self):
+        pass
 
     @abstractmethod
-    def populate(self):pass
+    def populate(self):
+        pass
+
+    @abstractmethod
+    def get_solution_class(self):
+        pass

@@ -4,11 +4,13 @@ import random
 from ...problems.Problem import Problem
 from .Unit import Unit
 from .Cable import Cable
-from .Path import Path
-from .Task import Task
+from .Paths import Paths
+from ...optimizers.NSGA2 import NSGA2ProblemMixin
+from ...optimizers.NSRA import NSRAProblemMixin
+from ...optimizers.NSWGE import NSWGEProblemMixin
 
 
-class Network(Problem):
+class Network(Problem, NSGA2ProblemMixin, NSRAProblemMixin, NSWGEProblemMixin):
     """
     TODO DOCSTRING
     """
@@ -16,7 +18,7 @@ class Network(Problem):
     def __init__(
         self,
         startTag,
-        task,
+        tasks,
         optimDirections: dict,
         minDepth: int,
         maxDepth: int,
@@ -27,7 +29,7 @@ class Network(Problem):
         self.units = []
         self.cables = []
         self.startTag = startTag
-        self.task = task
+        self.tasks = tasks
         self.minDepth = minDepth
         self.maxDepth = maxDepth
         self.mutationRate = mutationRate
@@ -38,6 +40,9 @@ class Network(Problem):
 
     def post_optimize(self):
         pass
+
+    def get_solution_class(self):
+        return Paths
 
     def generate_parameters(self, expression, *parameters):
         if callable(expression):
@@ -95,46 +100,84 @@ class Network(Problem):
             self.cables.append(newCable)
         return True
 
-    def populate(self, nSolution: int, nodeWeights=None) -> list[Path]:
+    def populate(self, nSolution: int, nodeWeights=None) -> list[Paths]:
         solutions = []
-        for _ in range(nSolution):
-            solutions.append(
-                self.generate_path(
-                    random.randint(self.minDepth, self.maxDepth), task=self.task, nodeWeights=nodeWeights
+        if nodeWeights:
+            for _ in range(nSolution):
+                parameters = tuple(
+                    self.generate_path(random.randint(self.minDepth, self.maxDepth), nodeWeights=nodeWeights[i])
+                    for i in range(len(self.tasks))
                 )
-            )
+                solutions.append(Paths(parameters=parameters, tasks=self.tasks))
+        else:
+            for _ in range(nSolution):
+                parameters = tuple(
+                    self.generate_path(random.randint(self.minDepth, self.maxDepth)) for _ in range(len(self.tasks))
+                )
+                solutions.append(Paths(parameters=parameters, tasks=self.tasks))
         return solutions
 
-    def crossover(self, path1: Path, path2: Path) -> Path:
-        sharedUnits = [u for u in path1.parameters["units"] if u in path2.parameters["units"]]
-        childPath = None
-        if sharedUnits:
-            chosenOne = random.choice(sharedUnits)
+    def crossover(self, paths1: Paths, paths2: Paths) -> Paths:
+        sharedUnits = tuple(
+            [u for u in paths1.parameters[i]["units"] if u in paths2.parameters[i]["units"]]
+            for i in range(len(self.tasks))
+        )
+        childPaths = None
+        if any(sharedUnits):
+            # choose a random list in sharedUnits among the non empty ones
+            chosenList, index = random.choice([(sharedUnits[i], i) for i in range(len(sharedUnits)) if sharedUnits[i]])
+            chosenOne = random.choice(chosenList)
             childPathUnits = (
-                path1.parameters["units"][: path1.parameters["units"].index(chosenOne) + 1]
-                + path2.parameters["units"][path2.parameters["units"].index(chosenOne) + 1 :]
+                paths1.parameters[index]["units"][: paths1.parameters[index]["units"].index(chosenOne) + 1]
+                + paths2.parameters[index]["units"][paths2.parameters[index]["units"].index(chosenOne) + 1 :]
             )
             childPathCables = (
-                path1.parameters["cables"][: path1.parameters["units"].index(chosenOne)]
-                + path2.parameters["cables"][path2.parameters["units"].index(chosenOne) :]
+                paths1.parameters[index]["cables"][: paths1.parameters[index]["units"].index(chosenOne)]
+                + paths2.parameters[index]["cables"][paths2.parameters[index]["units"].index(chosenOne) :]
             )
-            childPath = Path(units=childPathUnits, cables=childPathCables, task=self.task)
-        return childPath
+            # create a tuple called parameters with the same structure as paths1.parameters and paths2.parameters
+            # where each element is chosen randomly in paths1.parameters or paths2.parameters
+            parameters = tuple(
+                random.choice([paths1.parameters[i], paths2.parameters[i]]) for i in range(len(self.tasks))
+            )
+            # replace the element at index index in parameters with the dictionary
+            # {"units": childPathUnits, "cables": childPathCables}
+            parameters[index]["units"], parameters[index]["cables"] = childPathUnits, childPathCables
 
-    def mutate(self, path: Path):
-        mutPath = path
-        if path.parameters["cables"] and random.uniform(0, 1) < self.mutationRate:
-            nUnitsToRemove = random.randint(1, len(path.parameters["units"]) - 1)
-            mutPathUnits = path.parameters["units"][:-nUnitsToRemove]
-            mutPathCables = path.parameters["cables"][:-nUnitsToRemove]
-            mutPath = Path(_id=path._id, units=mutPathUnits, cables=mutPathCables, task=self.task)
-        return mutPath
+            childPaths = Paths(tasks=self.tasks, parameters=parameters)
 
-    def generate_path(self, maxDepth: int, task: Task = None, nodeWeights=None) -> Path:
+        return childPaths
+
+    def mutate(self, paths: Paths) -> Paths:
+        if random.uniform(0, 1) < self.mutationRate and any([t["cables"] for t in paths.parameters]):
+            pathIndex = random.choice([i for i, t in enumerate(paths.parameters) if t["cables"]])
+            mutPathsUnits = paths.parameters[pathIndex]["units"][:-1]
+            mutPathsCables = paths.parameters[pathIndex]["cables"][:-1]
+            paths.parameters[pathIndex]["units"], paths.parameters[pathIndex]["cables"] = mutPathsUnits, mutPathsCables
+        if random.uniform(0, 1) < self.mutationRate:
+            unit, index = random.choice([(paths.parameters[i]["units"], i) for i in range(len(self.tasks))])
+            last_unit = unit[-1]
+            cable = random.choice(last_unit.cables)
+            paths.parameters[index]["cables"].append(cable)
+            paths.parameters[index]["units"].append(cable.get_other_unit(last_unit))
+        return paths
+    
+    def add_final_node(self):
+        unit = Unit("0", 'FINAL')
+        self.units.append(unit)
+        for u in self.units:
+            cable = Cable(u, unit)
+
+    def remove_final_node(self):
+        for u in self.units:
+            if u.tag == 'FINAL':
+                self.units.remove(u)
+
+    def generate_path(self, maxDepth: int, nodeWeights=None) -> dict:
         starting = random.choice([unit for unit in self.units if unit.tag == self.startTag])
 
-        def _recursive_generate_path(unit: Unit, depth: int, path: Path, nodeWeights=None) -> Path:
-            path.add_unit(unit)
+        def _recursive_generate_path(unit: Unit, depth: int, path: dict, nodeWeights=None) -> dict:
+            path["units"].append(unit)
             if depth == maxDepth:
                 return path
             if nodeWeights is not None:
@@ -145,12 +188,13 @@ class Network(Problem):
                     cable = random.choices(unit.cables, weights=weights, k=1)[0]
             else:
                 cable = random.choice(unit.cables)
-            path.add_cable(cable)
+            path["cables"].append(cable)
             return _recursive_generate_path(cable.get_other_unit(unit), depth + 1, path, nodeWeights)
 
-        generatedPath = _recursive_generate_path(starting, 0, Path(), nodeWeights)
-        if task is not None:
-            generatedPath.compute_solution(task)
+        generatedPath = _recursive_generate_path(starting, 0, {"units": [], "cables": []}, nodeWeights)
+        while generatedPath["units"][-1].tag == 'FINAL':
+            generatedPath["units"].pop()
+            generatedPath["cables"].pop()
         return generatedPath
 
     def to_Neo4j(self):
