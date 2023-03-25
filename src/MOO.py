@@ -59,14 +59,12 @@ class MOO:
             nIterations: int,
             imDir: str = None,
             saveDir: str = None,
-            seed: int = None,
             export: bool = False,
             **kwargs,
         ):
         """
         Loop to uses the chosen optimizer to optimize solutions. At each iteration, create a matplotlib scatterplot.
         Uses plots at the end to generate a GIF.
-        A seed can be used for reproductivity.
         """
 
         # check that the problem and its solution implements correct mixins
@@ -124,12 +122,6 @@ class MOO:
                 for dim in Solution.optimDirections.keys()
             )
             return maxX, maxY, maxZ
-
-        # set random seed for reproductivity
-        if seed is not None:
-            random.seed(seed)
-        else:
-            random.seed()
 
         # reset and/or prepare problem for optimization
         self.problem.pre_optimize()

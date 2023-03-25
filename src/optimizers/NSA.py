@@ -28,15 +28,14 @@ class NSA(Optimizer, ABC):
                 for solBis in solutions:
                     # if sol is dominated in all dimensions by another solution
                     # then it is eliminated from the non-dominated solutions
-                    if all(
+                    if sol.solution != solBis.solution and all(
                         [
-                            solBis.solution[dim] < sol.solution[dim]
+                            solBis.solution[dim] <= sol.solution[dim]
                             if optimDir == "min"
-                            else solBis.solution[dim] > sol.solution[dim]
+                            else solBis.solution[dim] >= sol.solution[dim]
                             for dim, optimDir in Solution.optimDirections.items()
                         ]
                     ):
-                        sol.rank = rank
                         dominatedValues.append(sol)
                         undominatedValues.remove(sol)
                         break

@@ -17,13 +17,14 @@ class NSGA2(NSA):
         pass
 
     def optimize(self, ratioKept):
-        self.ranking()
         self.crowding_distance()
         self.selection(ratioKept)
         self.offspring_generation()
+        self.ranking()  # solutions are already ranked at beginning
 
     def post_optimize(self):
         self.ranking()
+        self.get_pareto()
 
     def crowding_distance(self):
         """

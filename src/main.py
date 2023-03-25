@@ -10,6 +10,9 @@ from .problems.multitask_routing.Network import Network
 from .problems.Solution import Solution
 
 
+# SEED
+random.seed(10)
+
 # PROBLEM DEFINITION
 paramsLayerOne = {
     "unit": {
@@ -65,34 +68,29 @@ paramsLayerThree = {
     "numberNewUnits": 2,
 }
 
-tasks = tuple(Task(random.randint(1, 1000), random.randint(1, 1000)) for _ in range(3))
+tasks = tuple(Task(random.randint(1, 10000), random.randint(1, 10000)) for _ in range(3))
 
 problem = Network(
     "DEVICE",
     tasks=tasks,
     optimDirections={"processingTime": "min", "cost": "min", "pollution": "min"},
-    minDepth=10,
-    maxDepth=20,
+    minDepth=1,
+    maxDepth=15,
     mutationRate=0.1,
     layers=[paramsLayerOne, paramsLayerTwo, paramsLayerThree],
 )
 
 # OPTIMIZATION
 nIterations = 100
-nSolutions =1500
-seed = 10
+nSolutions = 1000
 
 moo = MOO(problem)
 
-nsga2_paretos = moo.optimize(NSGA2, nSolutions, nIterations, seed=seed, ratioKept=0.5, saveDir="imgs")
-nswge_paretos = moo.optimize(NSWGE, nSolutions, nIterations, seed=seed, saveDir="imgs")
-nsra_paretos = moo.optimize(NSRA, nSolutions, nIterations, seed=seed, ratioKept=0.5, saveDir="imgs")
-
-# nswge_paretos = moo.optimize(NSWGE, nSolutions, nIterations, seed=seed)
+nsga2_paretos = moo.optimize(NSGA2, nSolutions, nIterations, ratioKept=0.5, saveDir="imgs")
+nswge_paretos = moo.optimize(NSWGE, nSolutions, nIterations, saveDir="imgs")
+nsra_paretos = moo.optimize(NSRA, nSolutions, nIterations, ratioKept=0.5, saveDir="imgs")
 
 # DISPLAYING RESULTS
 MOO.relative_efficiency(nsra_paretos, nsga2_paretos, Solution.optimDirections, verbose=True)
 MOO.relative_efficiency(nsra_paretos, nswge_paretos, Solution.optimDirections, verbose=True)
 MOO.relative_efficiency(nsga2_paretos, nswge_paretos, Solution.optimDirections, verbose=True)
-
-

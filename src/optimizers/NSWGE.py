@@ -25,28 +25,12 @@ class NSWGE(NSA):
         self.ranking()
         ## UPDATE WEIGHTS
         self.update_weights(ratio=.25, maximum=9)
-        #=======#
-        #  OLD  #
-        #=======#
- 
-        # self.crowding_distance()
-        # self.selection(ratioKept)
-        # self.offspring_generation()
 
     def post_optimize(self):
         self.normalize_weights()
         self.remove_final_node()
         self.ranking()
         self.get_pareto()
-
-    # def normalize_weights(self):
-    #     for i in range(len(self.problem.tasks)):
-    #         sumWeights = sum(self.weights[i].values())
-    #         for j in self.weights[i].keys():
-    #             if sumWeights != 0:
-    #                 self.weights[i][j] /= sumWeights
-    #             else:
-    #                 self.weights[i][j] = 1/len(self.weights[i].keys())
 
     def normalize_weights(self):
         for i in range(len(self.problem.tasks)):
@@ -107,14 +91,6 @@ class NSWGE(NSA):
                     else:
                         weight[node.id][node2.id] = 10
             self.weights.append(weight)
-
-    # def create_solutions(self, nSolutions):
-    #     solutions = []
-    #     for _ in range(len(self.problem.tasks)):
-    #         solutions.append(self.problem.populate(nSolutions, self.weights[i]))
-    #     self.solutions = 
-    #     print('solutions : ', self.solutions)
-       
 
     def __str__(self):
         return "NSWGE"
