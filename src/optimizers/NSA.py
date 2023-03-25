@@ -61,7 +61,7 @@ class NSA(Optimizer, ABC):
         # remove duplicates
         self.pareto_solutions = []
         for sol in pareto_solutions:
-            if sol.parameters not in [s.parameters for s in self.pareto_solutions]:
+            if sol.parameters not in [s.parameters for s in self.pareto_solutions] and sol.solution not in [s.solution for s in self.pareto_solutions]:
                 self.pareto_solutions.append(sol)
 
 
