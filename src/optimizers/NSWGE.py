@@ -24,7 +24,7 @@ class NSWGE(NSA):
         self.solutions = self.problem.populate(self.nSolutions, self.weights)
         self.ranking()
         ## UPDATE WEIGHTS
-        self.update_weights(ratio=.25, maximum=9)
+        self.update_weights(ratio=.5, maximum=25)
 
     def post_optimize(self):
         self.normalize_weights()
